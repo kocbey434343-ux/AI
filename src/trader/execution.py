@@ -1,12 +1,13 @@
 """Emir hazirlama, pozisyon acma-kaydetme ve kapama islemleri."""
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, NamedTuple
 import time
 import contextlib
 import pandas as pd
 
 from config.settings import Settings
+from .metrics import maybe_trim_metrics
 
 
 @dataclass(slots=True)
@@ -27,7 +28,6 @@ def compute_atr(signal: Dict[str, Any]):
     with contextlib.suppress(Exception):
         if isinstance(atr_raw, (int, float)):
             return float(atr_raw)
-        import pandas as pd  # lazy
         if isinstance(atr_raw, pd.Series) and len(atr_raw) > 0:
             return float(atr_raw.iloc[-1])
     return None
@@ -43,17 +43,25 @@ def initial_levels(self, price: float, risk_side: str | None, atr: float | None)
     return sl, tp
 
 
-def position_size(self, symbol: str, balance: float, price: float, stop_loss: float, signal: Dict[str, Any]):
-    size = self.risk_manager.calculate_position_size(balance, price, stop_loss)
+class SizeInputs(NamedTuple):
+    symbol: str
+    balance: float
+    price: float
+    stop_loss: float
+    signal: Dict[str, Any]
+
+
+def position_size(self, inputs: SizeInputs):
+    size = self.risk_manager.calculate_position_size(inputs.balance, inputs.price, inputs.stop_loss)
     if size <= 0:
         return 0.0
     # Adaptive ATR scaling
     if Settings.ADAPTIVE_RISK_ENABLED:
         with contextlib.suppress(Exception):
-            atr_raw = signal.get('indicators', {}).get('ATR')
+            atr_raw = inputs.signal.get('indicators', {}).get('ATR')
             atr_val = float(atr_raw.iloc[-1]) if hasattr(atr_raw, 'iloc') else float(atr_raw)
-            if price > 0 and atr_val > 0:
-                atr_pct = (atr_val / price) * 100.0
+            if inputs.price > 0 and atr_val > 0:
+                atr_pct = (atr_val / inputs.price) * 100.0
                 ref = Settings.ADAPTIVE_RISK_ATR_REF_PCT
                 ratio = atr_pct / ref if ref > 0 else 1.0
                 inv = 1.0 / max(0.1, ratio)
@@ -61,12 +69,12 @@ def position_size(self, symbol: str, balance: float, price: float, stop_loss: fl
                 size *= size_mult
     # Score based nudge
     with contextlib.suppress(Exception):
-        total_score = float(signal.get('total_score', 50))
+        total_score = float(inputs.signal.get('total_score', 50))
         strength = max(0.0, min(1.0, (total_score - 50)/50))
         size *= (0.9 + strength*0.4)
     # Quantize
     with contextlib.suppress(Exception):
-        q_qty, _ = self.api.quantize(symbol, size, price)
+        q_qty, _ = self.api.quantize(inputs.symbol, size, inputs.price)
         size = q_qty
     return size
 
@@ -79,7 +87,7 @@ def prepare_order_context(self, signal: Dict[str, Any], ctx: Dict[str, Any]):
     atr = compute_atr(signal)
     sl, tp = initial_levels(self, price, risk_side, atr)
     balance = self.get_account_balance()
-    size = position_size(self, symbol, balance, price, sl, signal)
+    size = position_size(self, SizeInputs(symbol, balance, price, sl, signal))
     if not size or size <= 0:
         self.logger.info(f"{symbol} pozisyon acilmadi: size=0")
         return None
@@ -246,6 +254,8 @@ def open_position(self, signal: Dict[str, Any], ctx: Dict[str, Any]):
     self.recent_open_latencies.append(latency_ms)
     if slip_bps is not None:
         self.recent_entry_slippage_bps.append(float(slip_bps))
+    # Trim metric list lengths
+    maybe_trim_metrics(self)
     self.logger.info(f"ACILDI {oc.symbol} {oc.side} size={exec_qty:.6f} entry={fill:.4f} sl={oc.protected_stop:.4f} tp={oc.take_profit:.4f} slip={slip_bps}")
     return True
 
@@ -269,6 +279,7 @@ def close_position(self, symbol: str):
     self.recent_close_latencies.append(latency)
     if slip_bps is not None:
         self.recent_exit_slippage_bps.append(float(slip_bps))
+    maybe_trim_metrics(self)
     self.logger.info(f"KAPANDI {symbol} lat={latency:.1f}ms slip={slip_bps}")
     return True
 

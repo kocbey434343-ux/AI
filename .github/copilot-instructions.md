@@ -174,7 +174,7 @@ Oturum Hedefi / Yapılanlar / Güncellenen Artefaktlar / Açık Riskler / Sonrak
 Yeni reconciliation döngüsü eklemek için: CR-0003 durumunu approved yap, AC test tanımla, patch uygula.
 
 # 19. Durum
-SSoT Revizyon: v1.5 (CR-0007 anomaly risk reduction eklendi).
+SSoT Revizyon: v1.6 (CR-0007 anomaly risk reduction testleri eklendi - risk azaltma & geri yukleme doğrulandı).
 
 # 20. Ek Notlar
 Kayıt defteri.txt değişiklik günlüğü devam edebilir; ancak yapısal kararlar bu dosyada tutulur.

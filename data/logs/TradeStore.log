@@ -224,3 +224,9 @@
 2025-08-23 16:00:32,243 INFO TradeStore - TradeStore hazir: data\trades.db
 2025-08-23 16:00:32,265 INFO TradeStore - TradeStore hazir: C:\Users\kocbe\AppData\Local\Temp\pytest-of-kocbe\pytest-22\test_weighted_pnl_scale_out0\trades.db
 2025-08-23 16:00:32,726 INFO TradeStore - TradeStore hazir: data\trades.db
+2025-08-23 16:11:47,558 INFO TradeStore - TradeStore hazir: data\trades.db
+2025-08-23 16:11:52,735 INFO TradeStore - TradeStore hazir: data\trades.db
+2025-08-23 16:12:00,762 INFO TradeStore - TradeStore hazir: data\trades.db
+2025-08-23 16:12:20,654 INFO TradeStore - TradeStore hazir: data\trades.db
+2025-08-23 16:12:28,296 INFO TradeStore - TradeStore hazir: data\trades.db
+2025-08-23 16:12:28,790 INFO TradeStore - TradeStore hazir: data\trades.db

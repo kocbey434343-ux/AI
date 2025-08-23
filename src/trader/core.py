@@ -65,6 +65,13 @@ class Trader:
         self.start_balance = 10_000.0  # offline varsayilan
 
         # Trailing & metrics init
+        # Metrics attribute stublar (tip analiz icin)
+        self.metrics_lock = threading.RLock()
+        self.MAX_RECENT_SAMPLES = 500
+        self.recent_open_latencies = []  # type: ignore[attr-defined]
+        self.recent_close_latencies = []  # type: ignore[attr-defined]
+        self.recent_entry_slippage_bps = []  # type: ignore[attr-defined]
+        self.recent_exit_slippage_bps = []  # type: ignore[attr-defined]
         init_trailing(self)
         init_metrics(self)
         # Gunluk risk reset tarihi (timezone aware UTC)

@@ -741,3 +741,19 @@
 2025-08-23 16:00:31,261 WARNING Trader - Gunluk risk kilidi aktif (halt flag)
 2025-08-23 16:00:31,783 WARNING Trader - Gunluk risk kilidi aktif (halt flag)
 2025-08-23 16:00:32,726 WARNING Trader - Gunluk risk kilidi aktif (halt flag)
+2025-08-23 16:11:47,558 WARNING Trader - Latency anomaly avg_open=1200.0ms
+2025-08-23 16:11:47,559 INFO Trader - Risk percent reduced to 1.000 due to latency anomaly
+2025-08-23 16:11:52,736 WARNING Trader - Slippage anomaly avg_entry=45.0bps
+2025-08-23 16:11:52,736 INFO Trader - Risk percent reduced to 1.000 due to slippage anomaly
+2025-08-23 16:12:00,762 WARNING Trader - Latency anomaly avg_open=1200.0ms
+2025-08-23 16:12:00,762 INFO Trader - Risk percent reduced to 1.000 due to latency anomaly
+2025-08-23 16:12:20,654 WARNING Trader - Latency anomaly avg_open=1200.0ms
+2025-08-23 16:12:20,654 INFO Trader - Risk percent reduced to 1.000 due to latency anomaly
+2025-08-23 16:12:20,654 INFO Trader - Latency recovered
+2025-08-23 16:12:20,655 INFO Trader - Risk percent restored to 2.000
+2025-08-23 16:12:28,296 WARNING Trader - Latency anomaly avg_open=1200.0ms
+2025-08-23 16:12:28,297 INFO Trader - Risk percent reduced to 1.000 due to latency anomaly
+2025-08-23 16:12:28,297 INFO Trader - Latency recovered
+2025-08-23 16:12:28,297 INFO Trader - Risk percent restored to 2.000
+2025-08-23 16:12:28,791 WARNING Trader - Slippage anomaly avg_entry=45.0bps
+2025-08-23 16:12:28,791 INFO Trader - Risk percent reduced to 1.000 due to slippage anomaly

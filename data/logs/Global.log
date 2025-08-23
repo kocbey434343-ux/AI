@@ -1,0 +1,200 @@
+2025-08-22 10:04:57,781 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:06:06,778 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:06:22,260 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:06:36,111 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:07:50,743 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:09:30,241 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:10:44,856 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:11:28,927 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:11:40,664 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 10:16:06,320 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 39, in __init__
+    self.signal_timer.timeout.connect(self.begin_incremental_signals)
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'begin_incremental_signals'
+
+2025-08-22 11:55:43,851 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'start_calibration'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 58, in __init__
+    self.init_ui()
+  File "D:\trade bot\src\ui\main_window.py", line 115, in init_ui
+    self.create_control_tab()
+  File "D:\trade bot\src\ui\main_window.py", line 163, in create_control_tab
+    self.run_calib_btn = QPushButton("Kalibrasyonu Çalıştır"); self.run_calib_btn.clicked.connect(self.start_calibration); cb_row.addWidget(self.run_calib_btn)
+                                                                                                  ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'start_calibration'
+
+2025-08-22 11:58:34,851 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'show_signal_window'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 58, in __init__
+    self.init_ui()
+  File "D:\trade bot\src\ui\main_window.py", line 140, in init_ui
+    self.create_signals_tab()
+  File "D:\trade bot\src\ui\main_window.py", line 286, in create_signals_tab
+    self.signal_btn = QPushButton("Detay Analiz"); self.signal_btn.clicked.connect(self.show_signal_window); bar.addWidget(self.signal_btn)
+                                                                                   ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'show_signal_window'
+
+2025-08-22 11:59:43,904 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute '_maybe_auto_refresh_closed'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 63, in __init__
+    self.closed_refresh_timer.timeout.connect(self._maybe_auto_refresh_closed)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute '_maybe_auto_refresh_closed'
+
+2025-08-22 11:59:59,080 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute '_maybe_auto_refresh_closed'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 63, in __init__
+    self.closed_refresh_timer.timeout.connect(self._maybe_auto_refresh_closed)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute '_maybe_auto_refresh_closed'
+
+2025-08-22 12:01:04,029 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute '_maybe_auto_refresh_closed'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 63, in __init__
+    self.closed_refresh_timer.timeout.connect(self._maybe_auto_refresh_closed)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute '_maybe_auto_refresh_closed'
+
+2025-08-22 12:01:39,455 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute '_tab_changed'
+Traceback (most recent call last):
+  File "D:\trade bot\src\main.py", line 81, in <module>
+    main()
+  File "D:\trade bot\src\main.py", line 71, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade bot\src\ui\main_window.py", line 82, in __init__
+    self.tabs.currentChanged.connect(self._tab_changed)
+                                     ^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute '_tab_changed'
+

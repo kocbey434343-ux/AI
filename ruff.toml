@@ -1,0 +1,33 @@
+# Ruff configuration for the trading bot project
+
+line-length = 100
+indent-width = 4
+src = ["src", "tests"]
+extend-exclude = ["data/", "backup/"]
+
+[lint]
+select = [
+  "E",  # pycodestyle errors
+  "F",  # pyflakes
+  "I",  # isort
+  "B",  # flake8-bugbear
+  "ARG",# unused arguments
+  "C4", # comprehensions
+  "SIM",# simplify
+  "RET",# return
+  "PL", # pylint common subset
+  "RUF",# Ruff specific
+]
+ignore = [
+  "E501",  # line length handled by formatter (Black)
+]
+
+[lint.isort]
+force-single-line = false
+known-first-party = ["src"]
+combine-as-imports = true
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false

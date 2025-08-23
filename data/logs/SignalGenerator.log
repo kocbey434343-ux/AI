@@ -1,0 +1,225 @@
+2025-08-19 06:10:55,759 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_061055.json
+2025-08-19 06:14:40,426 - SignalGenerator - ERROR - ETHUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:41,447 - SignalGenerator - ERROR - ADAUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:42,479 - SignalGenerator - ERROR - BNBUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:42,760 - SignalGenerator - ERROR - XRPUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:43,063 - SignalGenerator - ERROR - DOGEUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:44,078 - SignalGenerator - ERROR - DOTUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:44,369 - SignalGenerator - ERROR - UNIUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:45,397 - SignalGenerator - ERROR - LINKUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:45,939 - SignalGenerator - ERROR - LTCUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:46,227 - SignalGenerator - ERROR - SOLUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:46,994 - SignalGenerator - ERROR - MATICUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:48,016 - SignalGenerator - ERROR - AVAXUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:48,552 - SignalGenerator - ERROR - SHIBUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:48,838 - SignalGenerator - ERROR - TRXUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:49,376 - SignalGenerator - ERROR - ATOMUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:49,667 - SignalGenerator - ERROR - ETCUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:50,680 - SignalGenerator - ERROR - FILUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:50,958 - SignalGenerator - ERROR - FTMUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:51,986 - SignalGenerator - ERROR - ICPUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:52,268 - SignalGenerator - ERROR - SANDUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:52,559 - SignalGenerator - ERROR - MANAUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:53,590 - SignalGenerator - ERROR - VETUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:54,623 - SignalGenerator - ERROR - AXSUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:54,931 - SignalGenerator - ERROR - THETAUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:55,463 - SignalGenerator - ERROR - ALGOUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:56,490 - SignalGenerator - ERROR - XLMUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:57,519 - SignalGenerator - ERROR - XTZUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:57,783 - SignalGenerator - ERROR - EOSUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:58,810 - SignalGenerator - ERROR - AAVEUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:14:59,099 - SignalGenerator - ERROR - GRTUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:00,120 - SignalGenerator - ERROR - MKRUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:01,140 - SignalGenerator - ERROR - CRVUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:01,430 - SignalGenerator - ERROR - COMPUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:01,722 - SignalGenerator - ERROR - YFIUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:02,740 - SignalGenerator - ERROR - SNXUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:03,027 - SignalGenerator - ERROR - UMAUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:03,787 - SignalGenerator - ERROR - RENUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:04,817 - SignalGenerator - ERROR - KSMUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:05,085 - SignalGenerator - ERROR - BSVUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:05,380 - SignalGenerator - ERROR - ZECUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:06,400 - SignalGenerator - ERROR - ONTUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:07,424 - SignalGenerator - ERROR - IOTAUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:07,957 - SignalGenerator - ERROR - BATUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:08,246 - SignalGenerator - ERROR - ZRXUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:09,273 - SignalGenerator - ERROR - STORJUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:10,041 - SignalGenerator - ERROR - OMGUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:10,577 - SignalGenerator - ERROR - LRCUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:11,103 - SignalGenerator - ERROR - BANDUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:15:11,643 - SignalGenerator - ERROR - NMRUSDT sinyal üretilemedi: 'bool' object has no attribute 'empty'
+2025-08-19 06:16:35,591 - SignalGenerator - WARNING - MATICUSDT için veri bulunamadý
+2025-08-19 06:18:01,318 - SignalGenerator - WARNING - MATICUSDT için veri bulunamadý
+2025-08-19 06:40:09,630 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_064009.json
+2025-08-19 06:40:36,571 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_064036.json
+2025-08-19 06:42:15,920 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_064215.json
+2025-08-19 06:59:58,262 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_065958.json
+2025-08-19 07:10:48,596 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_071048.json
+2025-08-19 07:25:49,203 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_072549.json
+2025-08-19 07:30:54,131 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_073054.json
+2025-08-19 07:37:29,415 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_073729.json
+2025-08-19 07:45:03,898 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_074503.json
+2025-08-19 07:48:25,598 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_074825.json
+2025-08-19 07:53:20,317 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_075320.json
+2025-08-19 07:56:34,152 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_075634.json
+2025-08-19 08:00:31,500 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_080031.json
+2025-08-19 08:01:32,897 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_080132.json
+2025-08-19 08:05:21,070 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_080521.json
+2025-08-19 08:06:16,279 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_080616.json
+2025-08-19 08:06:23,552 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_080623.json
+2025-08-19 08:10:23,847 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_081023.json
+2025-08-19 08:11:17,296 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_081117.json
+2025-08-19 08:11:24,146 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_081124.json
+2025-08-19 08:15:23,874 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_081523.json
+2025-08-19 08:16:38,423 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_081638.json
+2025-08-19 08:20:24,240 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_082024.json
+2025-08-19 08:21:35,931 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_082135.json
+2025-08-19 08:25:25,718 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_082525.json
+2025-08-19 08:26:36,124 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_082636.json
+2025-08-19 08:30:31,157 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_083031.json
+2025-08-19 08:31:37,029 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_083137.json
+2025-08-19 08:35:20,357 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_083520.json
+2025-08-19 08:36:32,966 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_083632.json
+2025-08-19 08:40:28,692 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_084028.json
+2025-08-19 08:48:25,195 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_084825.json
+2025-08-19 08:48:25,209 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_084825.json
+2025-08-19 08:48:30,199 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_084830.json
+2025-08-19 08:53:13,391 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_085313.json
+2025-08-19 08:53:13,581 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_085313.json
+2025-08-19 08:55:41,656 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_085541.json
+2025-08-19 08:58:07,540 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_085807.json
+2025-08-19 08:58:09,835 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_085809.json
+2025-08-19 09:00:42,313 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090042.json
+2025-08-19 09:00:42,320 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090042.json
+2025-08-19 09:02:44,355 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090244.json
+2025-08-19 09:03:00,706 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090300.json
+2025-08-19 09:03:02,620 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090302.json
+2025-08-19 09:05:41,413 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090541.json
+2025-08-19 09:08:05,429 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090805.json
+2025-08-19 09:08:05,848 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_090805.json
+2025-08-19 09:13:07,527 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_091307.json
+2025-08-19 09:13:08,536 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_091308.json
+2025-08-19 09:18:05,559 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_091805.json
+2025-08-19 09:18:11,970 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_091811.json
+2025-08-19 09:23:03,193 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_092303.json
+2025-08-19 09:23:11,534 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_092311.json
+2025-08-19 09:28:07,572 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_092807.json
+2025-08-19 09:28:12,484 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_092812.json
+2025-08-19 09:31:29,629 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_093129.json
+2025-08-19 09:32:59,156 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_093259.json
+2025-08-19 09:33:07,007 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_093306.json
+2025-08-19 09:38:06,111 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_093806.json
+2025-08-19 09:38:08,020 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_093808.json
+2025-08-19 09:43:08,190 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_094308.json
+2025-08-19 09:43:08,658 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_094308.json
+2025-08-19 09:47:58,671 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_094758.json
+2025-08-19 09:48:06,772 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_094806.json
+2025-08-19 09:53:06,218 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_095306.json
+2025-08-19 09:53:06,368 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_095306.json
+2025-08-19 09:58:09,258 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_095809.json
+2025-08-19 09:58:09,263 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250819_095809.json
+2025-08-20 06:33:15,234 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250820_063315.json
+2025-08-22 01:23:47,578 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_012347.json
+2025-08-22 01:28:47,283 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_012847.json
+2025-08-22 01:33:47,274 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_013347.json
+2025-08-22 01:38:47,286 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_013847.json
+2025-08-22 01:43:46,874 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_014346.json
+2025-08-22 01:48:46,869 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_014846.json
+2025-08-22 01:53:46,891 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_015346.json
+2025-08-22 01:58:47,323 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_015847.json
+2025-08-22 02:03:46,869 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_020346.json
+2025-08-22 02:08:46,813 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_020846.json
+2025-08-22 02:13:46,880 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_021346.json
+2025-08-22 02:18:46,927 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_021846.json
+2025-08-22 02:23:47,569 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_022347.json
+2025-08-22 02:28:48,109 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_022848.json
+2025-08-22 02:33:46,918 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_023346.json
+2025-08-22 02:38:47,375 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_023847.json
+2025-08-22 02:43:47,388 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_024347.json
+2025-08-22 02:48:47,369 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_024847.json
+2025-08-22 02:53:46,918 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_025346.json
+2025-08-22 02:58:46,944 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_025846.json
+2025-08-22 03:03:47,905 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_030347.json
+2025-08-22 03:08:46,929 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_030846.json
+2025-08-22 03:13:46,915 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_031346.json
+2025-08-22 03:18:47,406 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_031847.json
+2025-08-22 03:23:46,926 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_032346.json
+2025-08-22 03:28:47,401 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_032847.json
+2025-08-22 03:33:48,185 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_033348.json
+2025-08-22 03:38:46,989 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_033846.json
+2025-08-22 03:43:47,432 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_034347.json
+2025-08-22 03:48:46,927 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_034846.json
+2025-08-22 03:53:47,411 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_035347.json
+2025-08-22 03:58:46,965 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_035846.json
+2025-08-22 04:03:47,948 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_040347.json
+2025-08-22 04:08:47,488 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_040847.json
+2025-08-22 04:13:46,960 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_041346.json
+2025-08-22 04:18:46,993 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_041846.json
+2025-08-22 04:23:47,175 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_042347.json
+2025-08-22 04:28:47,480 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_042847.json
+2025-08-22 04:33:46,985 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_043346.json
+2025-08-22 04:38:47,780 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_043847.json
+2025-08-22 04:43:46,990 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_044346.json
+2025-08-22 04:48:46,991 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_044846.json
+2025-08-22 04:53:47,015 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_045347.json
+2025-08-22 04:58:46,996 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_045846.json
+2025-08-22 05:03:47,030 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_050347.json
+2025-08-22 05:08:47,503 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_050847.json
+2025-08-22 05:13:47,021 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_051347.json
+2025-08-22 05:18:47,015 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_051847.json
+2025-08-22 05:23:47,030 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_052347.json
+2025-08-22 05:28:47,021 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_052847.json
+2025-08-22 05:33:46,494 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_053346.json
+2025-08-22 05:38:46,538 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_053846.json
+2025-08-22 05:43:48,256 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_054348.json
+2025-08-22 05:48:47,526 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_054847.json
+2025-08-22 05:53:47,548 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_055347.json
+2025-08-22 05:58:46,539 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_055846.json
+2025-08-22 06:03:46,554 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_060346.json
+2025-08-22 06:08:46,537 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_060846.json
+2025-08-22 06:13:48,032 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_061348.json
+2025-08-22 06:18:46,521 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_061846.json
+2025-08-22 06:31:19,745 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_063119.json
+2025-08-22 06:36:00,154 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_063600.json
+2025-08-22 06:41:01,183 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_064101.json
+2025-08-22 06:46:02,392 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_064602.json
+2025-08-22 06:51:00,202 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_065100.json
+2025-08-22 06:56:00,662 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_065600.json
+2025-08-22 07:01:00,214 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_070100.json
+2025-08-22 07:06:00,723 - SignalGenerator - INFO - Sinyaller kaydedildi: ./data/processed/signals_20250822_070600.json
+2025-08-22 09:26:46,560 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_092646.json
+2025-08-22 09:27:26,042 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_092726.json
+2025-08-22 09:37:03,620 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_093703.json
+2025-08-22 09:42:04,244 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_094204.json
+2025-08-22 10:17:28,427 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_101728.json
+2025-08-22 10:49:25,596 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_104925.json
+2025-08-22 10:54:25,554 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_105425.json
+2025-08-22 10:59:25,549 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_105925.json
+2025-08-22 11:04:26,160 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_110426.json
+2025-08-22 11:09:26,536 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_110926.json
+2025-08-22 11:14:26,071 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_111426.json
+2025-08-22 11:15:42,698 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_111542.json
+2025-08-22 11:16:24,942 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_111624.json
+2025-08-22 11:16:31,269 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_111631.json
+2025-08-22 12:02:30,057 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_120230.json
+2025-08-22 12:07:30,672 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_120730.json
+2025-08-22 12:35:05,013 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_123505.json
+2025-08-22 12:39:40,658 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_123940.json
+2025-08-22 12:40:52,772 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_124052.json
+2025-08-22 12:43:20,571 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_124320.json
+2025-08-22 12:47:56,115 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_124756.json
+2025-08-22 12:52:47,037 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_125247.json
+2025-08-22 12:57:16,064 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_125716.json
+2025-08-22 13:02:17,153 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250822_130217.json
+2025-08-23 05:43:20,721 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_054320.json
+2025-08-23 06:13:51,605 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_061351.json
+2025-08-23 06:59:19,670 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_065919.json
+2025-08-23 06:59:20,245 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_065920.json
+2025-08-23 07:00:26,159 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_070026.json
+2025-08-23 07:00:26,443 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_070026.json
+2025-08-23 08:19:13,646 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_081913.json
+2025-08-23 09:09:39,298 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_090939.json
+2025-08-23 09:12:41,340 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_091241.json
+2025-08-23 09:19:36,797 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_091936.json
+2025-08-23 10:22:57,472 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_102257.json
+2025-08-23 10:24:44,215 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_102444.json

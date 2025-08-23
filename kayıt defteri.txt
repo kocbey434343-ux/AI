@@ -1,0 +1,135 @@
+== Kayıt Defteri / Change Log ==
+
+[Tarih başlangıcı: 2025-08-22]
+
+1) Risk Limitleri Eklendi (Günlük Zarar & Ardışık Kayıp)
+- Ne: Settings'e MAX_DAILY_LOSS_PCT ve MAX_CONSECUTIVE_LOSSES eklendi; Trader.execute_trade içine kontroller kondu.
+- Neden: Gün içinde kontrolsüz sermaye erozyonunu önlemek ve tilt dönemlerinde sistemi durdurmak.
+
+2) Dinamik Slippage Basit Modeli
+- Ne: ATR tabanlı volatilite + spread bps ile giriş fiyatını ayarlayan basit formül.
+- Neden: Gerçekçi fill maliyeti simülasyonu; aşırı iyimser backtest/gerçek farkını azaltma.
+
+3) TradeStore Genişletme (stop_loss, take_profit)
+- Ne: Şema migration + insert_open artık stop/TP saklıyor.
+- Neden: Kapanış analizi, R-multiple ve slippage ölçümü için gerekli temel alanlar.
+
+4) Pozisyon Senkronizasyon Altyapısı (Skeleton)
+- Ne: Trader.sync_open_positions -> TradeStore'daki açık kayıtları RAM'e yükler.
+- Neden: Uygulama restart sonrası durum sürekliliği.
+
+5) Günlük Risk Fonksiyonları
+- Ne: TradeStore.daily_realized_pnl_pct ve consecutive_losses.
+- Neden: Guardrail kontrollerinin hesaplanması.
+
+6) Geliştirme Planı Hazırlığı
+- Ne: Backlog ve sprint önerileri çıkarıldı.
+- Neden: Odaklı ilerleme ve öncelik netliği.
+
+-- Yeni Adımlar (buradan sonrası append edilecek) --
+7) Günlük Risk Kilidi (Lock File)
+- Ne: Settings.DAILY_HALT_FLAG_PATH eklendi; Trader.execute_trade günlük zarar veya ardışık kayıp limiti aşılınca flag dosyası oluşturup tüm yeni işlemleri engelliyor.
+- Neden: Guardrail tetiklendikten sonra manuel müdahale / yeni seans başına kadar otomatik koruma.
+
+8) Outlier Bar Filtresi
+- Ne: Tek bar mutlak hareketi OUTLIER_RETURN_THRESHOLD_PCT üzerindeyse sinyal reddi.
+- Neden: Ani spike kaynaklı yanlış girişleri azaltmak.
+
+9) Parametre Set Kimliği
+- Ne: Settings.PARAM_SET_ID ve TradeStore'da param_set_id kolonu; trade kaydına yazılıyor.
+- Neden: Deney/parametre performans takibi.
+
+10) Slippage Ölçümü
+- Ne: Entry ve exit slippage bps kolonları (entry_slippage_bps, exit_slippage_bps) eklendi; Trader hesaplayıp kaydediyor.
+- Neden: Gerçek maliyet analizi ve strateji ayar kalibrasyonu.
+
+11) Latency Ölçümü
+- Ne: Order gönderim ve kapanış süreleri ms cinsinden log mesajlarına eklendi.
+- Neden: Yürütme performansı görünürlüğü.
+
+12) Genişletilmiş TradeStore Şeması
+- Ne: stop_loss, take_profit, param_set_id, entry/exit slippage alanları + migration.
+- Neden: Daha zengin performans ve risk analizi.
+
+13) Gelişmiş Ayarlar (Partial, Trailing, Correlation)
+- Ne: settings.py içine partial exit, trailing R activation ve korelasyon limit konfigleri eklendi.
+- Neden: İnkremental risk realizasyonu ve portföy konsantrasyon kontrolü.
+
+14) Metrics Tablosu
+- Ne: TradeStore.metrics tablosu + record_metric fonksiyonu.
+- Neden: Slippage, latency, R-multiple gibi canlı metriklerin kalıcı kaydı.
+
+15) Trader Partial & Trailing & Correlation Stubs
+- Ne: process_price_update ile partial exit ve trailing tetikleyici; korelasyon guard basit prefix ile.
+- Neden: Kademeli realize ve adaptif stop altyapısına temel.
+
+16) Pozisyon Reconciliation
+- Ne: BinanceAPI.get_positions ve Trader.sync_open_positions API verisi ile TradeStore kayıtlarını birleştiriyor, eksik RAM kayıtlarını ekliyor.
+- Neden: Restart sonrası veya senkron sapmalarında tutarlılık.
+
+17) Retry & Backoff + Partial Fill Simülasyonu
+- Ne: settings.py retry parametreleri; BinanceAPI.place_order retry/backoff ve testnet'te %15 partial fill olasılığı.
+- Neden: Dayanıklılık ve partial scenario testleri.
+
+18) Partial Fill Entegrasyonu Trader
+- Ne: execute_trade ve close_position executedQty dikkate alacak şekilde güncellendi.
+- Neden: Gerçek dolum boyutları üzerinden risk & PnL doğruluğu.
+
+19) CorrelationCache + ATR Trailing Entegrasyonu
+- Ne: correlation_cache.py oluşturuldu; Trader.__init__ içine corr_cache ve last_trailing_update eklendi; process_price_update korelasyon cache update ve ATR tabanlı trailing (_maybe_atr_trailing) çağrıları ekli. __init__ indentation hataları düzeltilip çalışır hale getirildi.
+- Neden: Portföy içi korelasyon izleme (ileride giriş engelleme için temel) ve volatilite uyarlamalı (ATR) dinamik stop sıkılaştırma ile risk ayarlı getiriyi optimize etmek.
+
+20) Gerçek Korelasyon Guard
+- Ne: Trader.execute_trade içinde fiyat eklendikten sonra CorrelationCache kullanılarak yeni sembol ile açık pozisyonlar arasındaki gerçek korelasyonlar hesaplanıyor; threshold'u aşan eşleşme sayısı MAX_CORRELATED_POSITIONS limitini geçerse giriş reddi (detay log). _check_correlation_guard artık (allow, details) döndürüyor.
+- Neden: Aşırı konsantre korele pozisyon kümelerinin eş zamanlı drawdown riskini azaltmak.
+
+21) Executions Tablosu & Partial / Trailing Persist
+- Ne: trade_store.py içine executions tablosu, record_execution ve update_stop_loss eklendi; Trader entry, scale_out, trailing_update ve close olaylarını executions'a yazıyor; ATR trailing stop güncellemesi DB stop_loss alanını güncelliyor.
+- Neden: Kademeli çıkışlar ve dinamik stop değişikliklerinin izlenebilirliği ile detaylı performans analizi ve yeniden başlatma sonrası tam rekonstrüksiyon.
+
+22) Thread-Safe Pozisyon Yönetimi
+- Ne: Trader içinde open_positions erişimleri threading.Lock ile korundu; process_price_update, entry/close, trailing ve update_positions fonksiyonları kilit kullandı.
+- Neden: Çoklu fiyat akışı / zamanlayıcı thread senaryolarında yarış koşullarını ve tutarsız state riskini azaltmak.
+
+23) Ağırlıklı PnL (Scale-Out Desteği)
+- Ne: close_trade artık executions (scale_out) kayıtlarını okuyup PnL'i ağırlıklı (qty/initial) bileşke getiri olarak hesaplıyor; close_position exit_qty gönderiyor.
+- Neden: Kısmi kâr alma sonrası nominal kapanış fiyatına bakıldığında win rate'in yapay düşük görünmesini engellemek, gerçek realize edilmiş getiriyi yansıtmak.
+
+24) Websocket Sağlık & Exponential Backoff
+- Ne: PriceStreamManager'a exponential (2^n) backoff + jitter, timeout (25s) izleme, health restart, status callbackleri (connecting/open/reconnecting/error/timeout) ve MainWindow içinde 10s health timer eklendi.
+- Neden: Sürekli bağlantı kopmalarında kaynak tüketimini ve sessizce donmuş fiyat akışını engelleyip otomatik kurtarma sağlamak; kullanıcıya görünür durum geri bildirimi vermek.
+- Teknik: backoff=min(max_backoff, base*2^(attempt-1)) ardından 0.8-1.2 jitter; son mesaj zaman damgası ile is_timed_out(); timeout halinde restart() semboller korunarak tetikleniyor; status label metin/renk güncellendi.
+
+25) TradeStore Refactor & Metrics Retrieval
+- Ne: trade_store.py fonksiyonları parçalara ayrıldı (_migrate_to_v1/v2), kwargs tabanlı insert_open & record_execution, recent_metrics eklendi, context manager desteği.
+- Neden: Bakım kolaylığı, parametre sayısını azaltma ve metrik sorgularını hızlandırma.
+- Teknik: Cognitive complexity düşürüldü; schema sabiti (SCHEMA_LATEST) tanımlandı.
+
+26) Ağırlıklı PnL Yeniden Hesap Backfill
+- Ne: Trader init sırasında recompute_all_weighted_pnl çağrısı; scale-out sonrası doğru bileşik PnL için kapalı kayıtlar normalize edildi.
+- Neden: Eski kayıtlarla yeni ağırlıklı PnL metodolojisi uyumu.
+
+27) Metrics Test Altyapısı
+- Ne: test_metrics.py eklendi; recent_metrics fonksiyonu ve metrik limit filtre davranışı doğrulandı; conftest.py test sonucu JSON yazıcı.
+- Neden: Ölçüm API'si regresyonlara karşı güvence.
+
+28) Pytest Yapılandırma Temizliği
+- Ne: pytest.ini bozuk addopts satırları kaldırıldı; sessiz test çalıştırma anormalliklerinin analizi için sade konfig.
+- Neden: CI entegrasyonu ve lokal stabilite.
+
+29) Migration Fonksiyon Ayrıştırma
+- Ne: _migrate tek parça yerine _migrate_to_v1/_migrate_to_v2; şema yükseltme adımları belirgin.
+- Neden: Gelecekte yeni kolon/tablolar ekleme maliyetini düşürme.
+
+30) Açık Pozisyon Reload & Scale Executions API
+- Ne: TradeStore.scale_executions eklendi; Trader start sırasında _reload_open_positions ile RAM state yeniden kuruyor.
+- Neden: Restart dayanıklılığı ve kısmi çıkış bilgisinin kaybını önleme.
+
+31) Trader State Backfill Genişletme
+- Ne: Trader init sırasında açık trade rekonstrüksiyonundan sonra guard & trailing sayaçları korunuyor (altyapı).
+- Neden: Kesinti sonrası risk profili sürekliliği.
+
+32) Gerçek Stop/TP Emir Yerleştirme
+- Ne: execution.place_protection_orders eklendi; spot için OCO, futures için STOP_MARKET & TAKE_PROFIT_MARKET koruma emirleri giriş sonrası otomatik gönderiliyor.
+- Neden: Bellek içi stop kaybı riskini azaltmak ve beklenmeyen uygulama kapanışında korumasız kalmayı engellemek.
+

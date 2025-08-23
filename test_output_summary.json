@@ -1,0 +1,120 @@
+{
+  "exitstatus": 1,
+  "summary": {
+    "passed": 17,
+    "failed": 1,
+    "skipped": 0,
+    "total": 18,
+    "collected": 30
+  },
+  "results": [
+    {
+      "nodeid": "tests/test_daily_risk_reset.py::test_daily_risk_reset_triggers",
+      "outcome": "passed",
+      "duration": 0.551477,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_daily_risk_reset.py::test_daily_risk_reset_noop_same_day",
+      "outcome": "passed",
+      "duration": 1.022991,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_indicators.py::TestIndicators::test_adx_in_all_indicators",
+      "outcome": "passed",
+      "duration": 0.023163,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_indicators.py::TestIndicators::test_bollinger_bands",
+      "outcome": "passed",
+      "duration": 0.001061,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_indicators.py::TestIndicators::test_macd",
+      "outcome": "passed",
+      "duration": 0.000897,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_indicators.py::TestIndicators::test_rsi",
+      "outcome": "passed",
+      "duration": 0.001241,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_indicators.py::TestIndicators::test_score_indicators",
+      "outcome": "passed",
+      "duration": 0.004853,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_metrics.py::test_recent_metrics_all_and_filtered",
+      "outcome": "passed",
+      "duration": 0.155824,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_quantize_and_correlation.py::test_quantize_min_qty_zero",
+      "outcome": "passed",
+      "duration": 0.470005,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_quantize_and_correlation.py::test_correlation_guard_blocks",
+      "outcome": "passed",
+      "duration": 0.478427,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_quantize_and_correlation.py::test_partial_exit_reduces_remaining",
+      "outcome": "passed",
+      "duration": 0.463788,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_reconciliation.py::test_reconciliation_diff",
+      "outcome": "passed",
+      "duration": 0.463954,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_risk_guards.py::test_daily_loss_guard",
+      "outcome": "passed",
+      "duration": 0.486226,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_risk_guards.py::test_consecutive_losses_guard",
+      "outcome": "passed",
+      "duration": 1.034958,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_risk_guards.py::test_correlation_guard_blocks",
+      "outcome": "passed",
+      "duration": 0.520049,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_risk_guards.py::test_weighted_pnl_scale_out",
+      "outcome": "passed",
+      "duration": 0.483521,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_structured_log_events.py::test_slog_buffer_accumulates_and_filters",
+      "outcome": "passed",
+      "duration": 0.00057,
+      "longrepr": null
+    },
+    {
+      "nodeid": "tests/test_trader_flow.py::test_trade_open_partial_exit_trailing_and_close",
+      "outcome": "failed",
+      "duration": 0.454842,
+      "longrepr": "def test_trade_open_partial_exit_trailing_and_close():\n        t = Trader()\n        sig = make_signal('TESTUSDT', 100.0, atr=1.0)\n>       assert t.execute_trade(sig) is True\nE       AssertionError: assert False is True\nE        +  where False = execute_trade({'close_price': 100.0, 'indicators': {'ATR': 1.0}, 'prev_close': 100.0, 'signal': 'AL', ...})\nE        +    where execute_trade = <src.trader.core.Trader object at 0x00000247F31C3E10>.execute_trade\n\ntests\\test_trader_flow.py:23: AssertionError"
+    }
+  ]
+}

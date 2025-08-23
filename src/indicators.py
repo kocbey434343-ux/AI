@@ -1,0 +1,318 @@
+import pandas as pd
+import numpy as np
+import json
+from ta.momentum import RSIIndicator, StochasticOscillator, WilliamsRIndicator
+from ta.trend import EMAIndicator, MACD, CCIIndicator, ADXIndicator
+from ta.volatility import BollingerBands, AverageTrueRange
+from config.settings import Settings
+
+class IndicatorCalculator:
+    def __init__(self):
+        self.indicators_config = self.load_config()
+
+    def load_config(self):
+        with open(Settings.INDICATORS_CONFIG, "r") as f:
+            return json.load(f)
+
+    def calculate_all_indicators(self, df: pd.DataFrame):
+        """
+        Calculate all technical indicators for the given DataFrame.
+
+        Args:
+            df (pd.DataFrame): The input DataFrame containing market data.
+
+        Returns:
+            dict: A dictionary containing the calculated indicator values.
+        """
+        df = df.copy()
+        results = {}
+        for ic in self.indicators_config['indicators']:
+            name = ic.get('name')
+            params = ic.get('params', {})
+            try:
+                if name == "RSI":
+                    results[name] = RSIIndicator(close=df['close'], window=params.get('timeperiod', 14)).rsi()
+                elif name == "MACD":
+                    macd = MACD(close=df['close'],
+                                window_slow=params.get('slowperiod', 26),
+                                window_fast=params.get('fastperiod', 12),
+                                window_sign=params.get('signalperiod', 9))
+                    results[name] = {
+                        'macd': macd.macd(),
+                        'signal': macd.macd_signal(),
+                        'histogram': macd.macd_diff()
+                    }
+                elif name == "Bollinger Bands":
+                    bb = BollingerBands(close=df['close'],
+                                        window=params.get('timeperiod', 20),
+                                        window_dev=params.get('nbdevup', 2))
+                    results[name] = {
+                        'upper': bb.bollinger_hband(),
+                        'middle': bb.bollinger_mavg(),
+                        'lower': bb.bollinger_lband()
+                    }
+                elif name == "Stochastic":
+                    st = StochasticOscillator(
+                        high=df['high'], low=df['low'], close=df['close'],
+                        window=params.get('fastk_period', 14),
+                        smooth_window=params.get('slowk_period', 3)
+                    )
+                    results[name] = {
+                        'slowk': st.stoch(),
+                        'slowd': st.stoch_signal()
+                    }
+                elif name == "Williams %R":
+                    wr = WilliamsRIndicator(
+                        high=df['high'], low=df['low'], close=df['close'],
+                        lbp=params.get('timeperiod', 14)
+                    )
+                    results[name] = wr.williams_r()
+                elif name == "CCI":
+                    cci = CCIIndicator(
+                        high=df['high'], low=df['low'], close=df['close'],
+                        window=params.get('timeperiod', 20), constant=0.015
+                    )
+                    results[name] = cci.cci()
+                elif name == "ATR":
+                    atr = AverageTrueRange(
+                        high=df['high'], low=df['low'], close=df['close'],
+                        window=params.get('timeperiod', 14)
+                    )
+                    results[name] = atr.average_true_range()
+                elif name == "EMA":
+                    ema = EMAIndicator(close=df['close'], window=params.get('timeperiod', 50)).ema_indicator()
+                    results[name] = ema
+                elif name == "ADX":
+                    adx = ADXIndicator(high=df['high'], low=df['low'], close=df['close'], window=params.get('timeperiod', 14))
+                    results[name] = {
+                        'adx': adx.adx(),
+                        'plus_di': adx.adx_pos(),
+                        'minus_di': adx.adx_neg()
+                    }
+            except Exception:
+                # Tekil indikatör hatasını yut ve devam et
+                continue
+        return results
+
+    def score_indicators(self, df: pd.DataFrame, indicators: dict):
+        """Geliştirilmiş puanlama (ağırlıklar + ATR penaltesi + osilatör birleştirme)."""
+        price = df['close'].iloc[-1]
+        scores = {}
+
+        # Ağırlıklar (kolay ayar için dict)
+        base_weights = {
+            'MACD': 1.3,
+            'EMA': 1.1,
+            'RSI': 1.0,
+            'Bollinger Bands': 0.9,
+            'Oscillator': 0.9,
+            'CCI': 0.6,
+            'ADX': 0.0  # ADX doğrudan eklenmez, diğerlerinin ağırlığını modüle eder
+        }
+
+        # Ham normalizasyon yardımcıları
+        def norm_macd():
+            try:
+                hist = indicators['MACD']['histogram'].iloc[-1]
+                # ATR ile ölçekle (çok küçük / büyük histogramı normalize et)
+                atr_pct = None
+                if 'ATR' in indicators:
+                    atr_val = indicators['ATR'].iloc[-1]
+                    atr_pct = (atr_val / max(price, 1e-12))
+                scale = 1.0
+                if atr_pct and atr_pct > 0:
+                    scale = max(0.5, min(3.0, 1.0 / (atr_pct * 10)))  # volatilite artınca histogram etkisi bir miktar zayıflar
+                return float(np.clip(50 + 50 * np.tanh(hist * scale), 0, 100))
+            except Exception:
+                return 50.0
+
+        def norm_bbands():
+            try:
+                upper = indicators['Bollinger Bands']['upper'].iloc[-1]
+                lower = indicators['Bollinger Bands']['lower'].iloc[-1]
+                band = max(upper - lower, 1e-12)
+                pos = (price - lower) / band
+                pos = float(np.clip(pos, 0, 1))
+                # Dar bant filtresi (sıkışma) -> etkisini azalt
+                squeeze = (band / max(price, 1e-12))
+                if squeeze < 0.01:  # %1'den küçük bant genişliği
+                    base = 50 + (pos - 0.5) * 40  # etkisi azalt
+                else:
+                    base = pos * 100
+                return float(np.clip(base, 0, 100))
+            except Exception:
+                return 50.0
+
+        def norm_rsi():
+            try:
+                return float(np.clip(indicators['RSI'].iloc[-1], 0, 100))
+            except Exception:
+                return 50.0
+
+        def norm_ema():
+            try:
+                ema = indicators['EMA'].iloc[-1]
+                diff = (price - ema) / max(price, 1e-12)
+                # Daha yumuşak ölçek (önceki *10 çok agresifti)
+                return float(np.clip(50 + 50 * np.tanh(diff * 5), 0, 100))
+            except Exception:
+                return 50.0
+
+        def norm_cci():
+            try:
+                cci = indicators['CCI'].iloc[-1]
+                return float(np.clip(50 + (cci / 250) * 50, 0, 100))  # daha geniş bant
+            except Exception:
+                return 50.0
+        def norm_oscillator():
+            st_val = None
+            wr_val = None
+            try:
+                if 'Stochastic' in indicators:
+                    st_val = float(np.clip(indicators['Stochastic']['slowk'].iloc[-1], 0, 100))
+            except Exception:
+                st_val = None
+            try:
+                if 'Williams %R' in indicators:
+                    wr = indicators['Williams %R'].iloc[-1]
+                    wr_val = float(np.clip(100 + wr, 0, 100))
+            except Exception:
+                wr_val = None
+            vals = [v for v in [st_val, wr_val] if v is not None]
+            if not vals:
+                return 50.0
+            return float(sum(vals) / len(vals))
+
+        def norm_adx():
+            try:
+                adx_val = indicators['ADX']['adx'].iloc[-1]
+                return float(np.clip(adx_val, 0, 100))
+            except Exception:
+                return 50.0
+
+        # Hesapla
+        component_scores = {}
+        if 'MACD' in indicators:
+            component_scores['MACD'] = norm_macd()
+        if 'EMA' in indicators:
+            component_scores['EMA'] = norm_ema()
+        if 'RSI' in indicators:
+            component_scores['RSI'] = norm_rsi()
+        if 'Bollinger Bands' in indicators:
+            component_scores['Bollinger Bands'] = norm_bbands()
+        # Oscillator birleşik
+        if 'Stochastic' in indicators or 'Williams %R' in indicators:
+            component_scores['Oscillator'] = norm_oscillator()
+        if 'CCI' in indicators:
+            component_scores['CCI'] = norm_cci()
+        if 'ADX' in indicators:
+            component_scores['ADX'] = norm_adx()
+
+        # Ağırlıklı ortalama
+        # ADX rejimine göre adaptasyon (trend düşükse trend odaklı ağırlıkları azalt, mean-reversion bileşenlerini artır)
+        weights = base_weights.copy()
+        adx_level = component_scores.get('ADX')
+        if adx_level is not None:
+            if adx_level < 20:  # trend zayıf
+                weights['MACD'] *= 0.7
+                weights['EMA'] *= 0.7
+                weights['Bollinger Bands'] *= 1.2
+                weights['Oscillator'] *= 1.1
+            elif adx_level > 35:  # güçlü trend
+                weights['MACD'] *= 1.2
+                weights['EMA'] *= 1.1
+                weights['Oscillator'] *= 0.9
+                weights['Bollinger Bands'] *= 0.85
+        # Normalleştirilmiş ağırlıklı ortalama
+        contributions = {}
+        w_sum = 0.0
+        w_total = 0.0
+        for name, val in component_scores.items():
+            w = weights.get(name, 1.0)
+            contributions[name] = val * w
+            w_sum += val * w
+            w_total += w
+        core_score = (w_sum / w_total) if w_total else 50.0
+
+        # ATR risk penaltesi (volatilite yüksekse bir miktar kırp)
+        risk_multiplier = 1.0
+        if 'ATR' in indicators:
+            try:
+                atr_val = indicators['ATR'].iloc[-1]
+                atr_pct = atr_val / max(price, 1e-12)
+                # 0 -> 1.0 (penaltesiz) ; 0.05 ve üzeri -> %30'a kadar kesinti
+                penalty = min(0.30, max(0.0, (atr_pct - 0.01) * (0.30 / 0.04)))  # 1% üstü artan ceza ~5% tepe
+                risk_multiplier = 1.0 - penalty
+            except Exception:
+                pass
+
+        final_score = core_score * risk_multiplier
+
+        # Skorlar dönerken orijinal indikatör isimlerini de kullanıcıya göstermek için
+        # component_scores + ATR risk ayrı döndür.
+        out_scores = {}
+        out_scores.update(component_scores)
+        if 'ATR' in indicators:
+            out_scores['ATR_RiskMult'] = risk_multiplier * 100  # bilgilendirme için %
+
+        return {
+            'scores': out_scores,
+            'total_score': final_score,
+            'contributions': contributions,
+            'signal': self.get_signal(final_score)
+        }
+
+    def get_signal(self, score: float) -> str:
+        """
+        Determine the trading signal based on the overall score.
+
+        Args:
+            score (float): The overall score calculated from the indicator scores.
+
+        Returns:
+            str: The trading signal ('AL', 'SAT', or 'BEKLE').
+        """
+        # Histerezis için önceki sinyal (state) tutulabilir; basit versiyonda direkt threshold + exit threshold.
+        # Burada sadece ana eşikleri kullanıyoruz; GUI / caller katmanında state eklenebilir.
+        if score >= Settings.BUY_SIGNAL_THRESHOLD:
+            return "AL"
+        if score <= Settings.SELL_SIGNAL_THRESHOLD:
+            return "SAT"
+        return "BEKLE"
+
+    # ---- Legacy test wrapper methods ----
+    def calculate_rsi(self, df: pd.DataFrame):
+        return RSIIndicator(close=df['close'], window=14).rsi()
+
+    def calculate_macd(self, df: pd.DataFrame):
+        macd = MACD(close=df['close'], window_slow=26, window_fast=12, window_sign=9)
+        return {
+            'macd': macd.macd(),
+            'signal': macd.macd_signal(),
+            'histogram': macd.macd_diff()
+        }
+
+    def calculate_bollinger_bands(self, df: pd.DataFrame):
+        bb = BollingerBands(close=df['close'], window=20, window_dev=2)
+        return {
+            'upper': bb.bollinger_hband(),
+            'middle': bb.bollinger_mavg(),
+            'lower': bb.bollinger_lband()
+        }
+
+    @staticmethod
+    def calculate_moving_average(data, window_size):
+        if window_size <= 0:
+            raise ValueError("window_size > 0 olmalı")
+        data = list(data)
+        if len(data) < window_size:
+            return []
+        out = []
+        cumsum = 0.0
+        for i, v in enumerate(data):
+            cumsum += v
+            if i >= window_size:
+                cumsum -= data[i - window_size]
+            if i >= window_size - 1:
+                out.append(cumsum / window_size)
+        return out

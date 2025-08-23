@@ -1,0 +1,121 @@
+﻿import sys
+import os
+import signal
+import time
+import traceback
+import psutil
+import locale
+from PyQt5.QtWidgets import QApplication, QSplashScreen
+from PyQt5.QtCore import Qt, QTranslator, QLocale
+from PyQt5.QtGui import QPixmap
+from src.ui.main_window import MainWindow
+from src.utils.logger import get_logger
+from config.settings import Settings
+
+class TradeBot:
+    def __init__(self):
+        self.logger = get_logger("Main")
+        self.app = None
+        self.window = None
+        self.start_time = time.time()
+
+    def setup_signal_handlers(self):
+        """Sistem sinyallerini yapılandır"""
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+
+    def signal_handler(self, signum, frame):
+        """Sistem sinyallerini işle"""
+        self.logger.info(f"Sinyal alındı: {signum}")
+        self.cleanup()
+        sys.exit(0)
+
+    def setup_locale(self):
+        """Dil ve bölge ayarlarını yapılandır"""
+        translator = QTranslator()
+        locale = QLocale.system().name()
+        if translator.load(f"translations/{locale}"):
+            self.app.installTranslator(translator)
+            self.logger.info(f"Dil yüklendi: {locale}")
+
+    def check_system_resources(self):
+        """Sistem kaynaklarını kontrol et"""
+        memory = psutil.virtual_memory()
+        cpu_percent = psutil.cpu_percent()
+        disk = psutil.disk_usage('/')
+        
+        self.logger.info(f"Bellek Kullanımı: {memory.percent}%")
+        self.logger.info(f"CPU Kullanımı: {cpu_percent}%")
+        self.logger.info(f"Disk Kullanımı: {disk.percent}%")
+
+    def setup_directories(self):
+        """Gerekli dizinleri oluştur"""
+        required_dirs = [
+            Settings.LOG_PATH,
+            "data",
+            "config",
+            "cache"
+        ]
+        for directory in required_dirs:
+            os.makedirs(directory, exist_ok=True)
+            self.logger.info(f"Dizin kontrol edildi: {directory}")
+
+    def cleanup(self):
+        """Kaynakları temizle"""
+        if self.window:
+            self.window.close()
+        
+        # Çalışma süresi logla
+        runtime = time.time() - self.start_time
+        self.logger.info(f"Toplam çalışma süresi: {runtime:.2f} saniye")
+        
+        # Bellek kullanımını logla
+        process = psutil.Process(os.getpid())
+        memory_usage = process.memory_info().rss / 1024 / 1024
+        self.logger.info(f"Kullanılan bellek: {memory_usage:.2f} MB")
+
+    def run(self):
+        """Uygulamayı başlat"""
+        try:
+            self.logger.info("Trade Bot başlatılıyor...")
+            
+            # Sistem kontrollerini yap
+            self.setup_directories()
+            self.check_system_resources()
+            self.setup_signal_handlers()
+
+            # Qt uygulamasını başlat
+            self.app = QApplication(sys.argv)
+            
+            # Splash screen göster
+            splash_pix = QPixmap("resources/splash.png")
+            splash = QSplashScreen(splash_pix)
+            splash.show()
+            self.app.processEvents()
+
+            # Dil desteğini ayarla
+            self.setup_locale()
+
+            # Ana pencereyi oluştur
+            self.window = MainWindow()
+            self.window.show()
+            splash.finish(self.window)
+
+            self.logger.info("Arayüz hazır")
+
+            # Uygulamayı çalıştır
+            exit_code = self.app.exec_()
+            
+            # Temizlik yap ve çık
+            self.cleanup()
+            sys.exit(exit_code)
+
+        except Exception as e:
+            self.logger.error(f"Kritik hata: {str(e)}")
+            self.logger.error(traceback.format_exc())
+            self.cleanup()
+            sys.exit(1)
+
+if __name__ == "__main__":
+    bot = TradeBot()
+    bot.run()

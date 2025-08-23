@@ -1,0 +1,7 @@
+{
+  "ts": "2025-08-22T09:05:18.615273Z",
+  "commission_pct_per_side": 0.04,
+  "slippage_pct_per_side": 0.02,
+  "use_next_bar_fill": true,
+  "source": "ui"
+}

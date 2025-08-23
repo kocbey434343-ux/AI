@@ -1,0 +1,28 @@
+﻿import sys
+import os
+from PyQt5.QtWidgets import QApplication
+from src.ui.main_window import MainWindow
+from src.utils.logger import get_logger
+from config.settings import Settings
+
+def main():
+    """Ana giriş noktası"""
+    # Log dizini oluştur
+    os.makedirs(Settings.LOG_PATH, exist_ok=True)
+
+    # Logger'ı başlat
+    logger = get_logger("Main")
+    logger.info("Trade Bot başlatılıyor...")
+
+    # Uygulamayı başlat
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+
+    logger.info("Arayüz hazır")
+
+    # Uygulamayı çalıştır
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()

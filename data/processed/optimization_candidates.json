@@ -1,0 +1,105 @@
+[
+  {
+    "buy": 50.19,
+    "sell": 16.82,
+    "buy_exit": 45.19,
+    "sell_exit": 21.82,
+    "baseline": true
+  },
+  {
+    "buy": 50.19,
+    "sell": 17.02,
+    "buy_exit": 45.19,
+    "sell_exit": 22.02,
+    "winrate": 51.72,
+    "expectancy_pct": 0.52,
+    "winrate_after_costs": 51.72,
+    "expectancy_after_costs_pct": 0.4,
+    "total_trades": 29,
+    "max_consec_losses": 3
+  },
+  {
+    "buy": 50.19,
+    "sell": 20.69,
+    "buy_exit": 45.19,
+    "sell_exit": 25.69,
+    "winrate": 48.57,
+    "expectancy_pct": 0.42,
+    "winrate_after_costs": 48.57,
+    "expectancy_after_costs_pct": 0.3,
+    "total_trades": 35,
+    "max_consec_losses": 3
+  },
+  {
+    "buy": 50.19,
+    "sell": 27.61,
+    "buy_exit": 45.19,
+    "sell_exit": 32.61,
+    "winrate": 46.81,
+    "expectancy_pct": 0.31,
+    "winrate_after_costs": 46.81,
+    "expectancy_after_costs_pct": 0.19,
+    "total_trades": 47,
+    "max_consec_losses": 5
+  },
+  {
+    "buy": 50.19,
+    "sell": 23.1,
+    "buy_exit": 45.19,
+    "sell_exit": 28.1,
+    "winrate": 43.59,
+    "expectancy_pct": 0.27,
+    "winrate_after_costs": 43.59,
+    "expectancy_after_costs_pct": 0.15,
+    "total_trades": 39,
+    "max_consec_losses": 3
+  },
+  {
+    "buy": 49.14,
+    "sell": 17.02,
+    "buy_exit": 44.14,
+    "sell_exit": 22.02,
+    "winrate": 41.18,
+    "expectancy_pct": 0.26,
+    "winrate_after_costs": 41.18,
+    "expectancy_after_costs_pct": 0.14,
+    "total_trades": 34,
+    "max_consec_losses": 3
+  },
+  {
+    "buy": 49.14,
+    "sell": 16.82,
+    "buy_exit": 44.14,
+    "sell_exit": 21.82,
+    "winrate": 41.18,
+    "expectancy_pct": 0.24,
+    "winrate_after_costs": 41.18,
+    "expectancy_after_costs_pct": 0.12,
+    "total_trades": 34,
+    "max_consec_losses": 3
+  },
+  {
+    "buy": 49.14,
+    "sell": 20.69,
+    "buy_exit": 44.14,
+    "sell_exit": 25.69,
+    "winrate": 40.0,
+    "expectancy_pct": 0.22,
+    "winrate_after_costs": 40.0,
+    "expectancy_after_costs_pct": 0.1,
+    "total_trades": 40,
+    "max_consec_losses": 3
+  },
+  {
+    "buy": 64.58,
+    "sell": 17.02,
+    "buy_exit": 59.58,
+    "sell_exit": 22.02,
+    "winrate": 33.33,
+    "expectancy_pct": 0.2,
+    "winrate_after_costs": 33.33,
+    "expectancy_after_costs_pct": 0.08,
+    "total_trades": 24,
+    "max_consec_losses": 4
+  }
+]

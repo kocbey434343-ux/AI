@@ -1,0 +1,58 @@
+{
+  "indicators": [
+    {
+      "name": "RSI",
+      "params": {"timeperiod": 14},
+      "buy_threshold": 70,
+      "sell_threshold": 30
+    },
+    {
+      "name": "MACD",
+      "params": {"fastperiod": 12, "slowperiod": 26, "signalperiod": 9},
+      "buy_threshold": 0,
+      "sell_threshold": 0
+    },
+    {
+      "name": "Bollinger Bands",
+      "params": {"timeperiod": 20, "nbdevup": 2, "nbdevdn": 2},
+      "buy_threshold": 0,
+      "sell_threshold": 0
+    },
+    {
+      "name": "Stochastic",
+      "params": {"fastk_period": 14, "slowk_period": 3, "slowd_period": 3},
+      "buy_threshold": 80,
+      "sell_threshold": 20
+    },
+    {
+      "name": "Williams %R",
+      "params": {"timeperiod": 14},
+      "buy_threshold": -20,
+      "sell_threshold": -80
+    },
+    {
+      "name": "CCI",
+      "params": {"timeperiod": 20},
+      "buy_threshold": 100,
+      "sell_threshold": -100
+    },
+    {
+      "name": "ATR",
+      "params": {"timeperiod": 14},
+      "buy_threshold": 0,
+      "sell_threshold": 0
+    },
+    {
+      "name": "EMA",
+      "params": {"timeperiod": 50},
+      "buy_threshold": 0,
+      "sell_threshold": 0
+    },
+    {
+      "name": "ADX",
+      "params": {"timeperiod": 14},
+      "buy_threshold": 25,
+      "sell_threshold": 0
+    }
+  ]
+}

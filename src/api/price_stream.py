@@ -146,7 +146,9 @@ class PriceStreamManager:
         if self.thread:
             self.thread.join(timeout=5)
             if self.thread.is_alive():
-                self.logger.warning("WS thread join timeout; thread hala yaşıyor (force stop not implemented)")
+                self.logger.warning("WS thread join timeout; thread hala yasiyor - zorla durdurma gerekebilir")
+                # Force termination sonrası yeniden başlatmayı main thread'e bırak
+                # Thread içindeki ws.close() timeout'tan sonra çalışması bekleniyor
         self.thread = None
         try:
             if self.on_status:

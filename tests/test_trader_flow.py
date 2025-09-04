@@ -19,6 +19,8 @@ def make_signal(symbol: str, price: float, atr: float = 1.0):
 
 def test_trade_open_partial_exit_trailing_and_close():
     t = Trader()
+    # Ensure clean state
+    t.positions.clear()
     sig = make_signal('TESTUSDT', 100.0, atr=1.0)
     assert t.execute_trade(sig) is True
     pos = t.get_open_positions()['TESTUSDT']

@@ -3,20 +3,49 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def _sanitize_cost_percent(name: str, value: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+    """Yuzde degeri mantikli sinirlara kirmadan sigdir (clamp) ve asiri degerleri uyar.
+    Degerler yuzde olarak saklanir (0.04 => %0.04). max_val default=1.0 (%1.00) konservatif ust sinir.
+    Not: settings import sirasinda logger kullanmamak icin basit print ile uyarilir.
+    """
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        v = 0.0
+    if v < min_val:
+        print(f"[Settings] WARN: {name} < {min_val} ise {min_val}'a cekildi (was={value})")
+        return min_val
+    if v > max_val:
+        print(f"[Settings] WARN: {name} > {max_val} ise {max_val}'a cekildi (was={value})")
+        return max_val
+    return v
+
 class Settings:
     # API
     BINANCE_API_KEY = os.getenv("BINANCE_API_KEY")
     BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET")
-    USE_TESTNET = os.getenv("USE_TESTNET", "false").lower() == "true"
+    # Varsayilan: testnet (operasyonel guvenlik). Prod icin ALLOW_PROD=true gerekir.
+    USE_TESTNET = os.getenv("USE_TESTNET", "true").lower() == "true"
+    ALLOW_PROD = os.getenv("ALLOW_PROD", "false").lower() == "true"
     # Offline (test / debug) mode: "true" => force, "auto" => enabled if no API key, anything else => disable
     _offline_env = os.getenv("OFFLINE_MODE", "auto").lower()
-    OFFLINE_MODE = True if _offline_env == "true" else (False if _offline_env not in ("true","auto") else (BINANCE_API_KEY in (None, "") or BINANCE_API_SECRET in (None, "")))
+    if _offline_env == "true":
+        OFFLINE_MODE = True
+    elif _offline_env == "auto":
+        OFFLINE_MODE = (BINANCE_API_KEY in (None, "") or BINANCE_API_SECRET in (None, ""))
+    else:
+        OFFLINE_MODE = False
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     # Structured logging toggle
     STRUCTURED_LOG_ENABLED = os.getenv("STRUCTURED_LOG_ENABLED", "true").lower() == "true"
+    # Structured log JSON schema validation (CR-0075)
+    STRUCTURED_LOG_VALIDATION = os.getenv("STRUCTURED_LOG_VALIDATION", "true").lower() == "true"
 
-    # Relative default paths
+    # Env-aware path isolation flag (off|on|auto). Default: off (geriye donuk uyum)
+    ENV_ISOLATION = os.getenv("ENV_ISOLATION", "off").lower()
+
+    # Relative default paths (klasik varsayilanlar; izolasyon sonradan uygulanir)
     DATA_PATH = os.getenv("DATA_PATH", "./data")
     LOG_PATH = os.getenv("LOG_PATH", "./data/logs")
     BACKUP_PATH = os.getenv("BACKUP_PATH", "./backup")
@@ -40,9 +69,25 @@ class Settings:
     # Simulation / Trading Costs
     # DIKKAT: Bu degerler yuzde cinsinden saklanir (0.04 => %0.04 = 4 bps). Hesaplamalarda /100 yapilmalidir.
     # Round-trip tahmini maliyet ≈ 2 * (commission + slippage) (yuzde cinsinden dusunulunce /100 /100).
-    # Ileride kafa karismasini azaltmak icin isimler korunuyor, fakat README'de netlestirilecek.
-    COMMISSION_PCT_PER_SIDE = float(os.getenv("COMMISSION_PCT_PER_SIDE", "0.04"))  # stored as percent
-    SLIPPAGE_PCT_PER_SIDE = float(os.getenv("SLIPPAGE_PCT_PER_SIDE", "0.02"))      # stored as percent
+    # Ileride kafa karismasini azaltmak icin isimlar korunuyor, fakat README'de netlestirilecek.
+    # Not: MAKER/TAKER opsiyoneldir; set edilmezse COMMISSION_PCT_PER_SIDE kullanilir (geriye donuk uyum).
+
+    COMMISSION_PCT_PER_SIDE = _sanitize_cost_percent(
+        "COMMISSION_PCT_PER_SIDE", float(os.getenv("COMMISSION_PCT_PER_SIDE", "0.04"))
+    )  # stored as percent
+    SLIPPAGE_PCT_PER_SIDE = _sanitize_cost_percent(
+        "SLIPPAGE_PCT_PER_SIDE", float(os.getenv("SLIPPAGE_PCT_PER_SIDE", "0.02"))
+    )  # stored as percent
+
+    # Opsiyonel maker/taker ayri parametreleri; belirtilmezse COMMISSION_PCT_PER_SIDE kullanilir
+    MAKER_COMMISSION_PCT_PER_SIDE = _sanitize_cost_percent(
+        "MAKER_COMMISSION_PCT_PER_SIDE",
+        float(os.getenv("MAKER_COMMISSION_PCT_PER_SIDE", str(COMMISSION_PCT_PER_SIDE)))
+    )
+    TAKER_COMMISSION_PCT_PER_SIDE = _sanitize_cost_percent(
+        "TAKER_COMMISSION_PCT_PER_SIDE",
+        float(os.getenv("TAKER_COMMISSION_PCT_PER_SIDE", str(COMMISSION_PCT_PER_SIDE)))
+    )
     # Gelişmiş (placeholder) dinamik kayma parametreleri
     DYNAMIC_SLIPPAGE_MULT = float(os.getenv("DYNAMIC_SLIPPAGE_MULT", "0.0"))
     SPREAD_BASIS_POINTS = float(os.getenv("SPREAD_BASIS_POINTS", "0.0"))
@@ -69,14 +114,22 @@ class Settings:
     CORRELATION_THRESHOLD = float(os.getenv("CORRELATION_THRESHOLD", "0.85"))
     MAX_CORRELATED_POSITIONS = int(os.getenv("MAX_CORRELATED_POSITIONS", "2"))
     CORRELATION_TTL_SECONDS = int(os.getenv("CORRELATION_TTL_SECONDS", "900"))
+    CORRELATION_DYNAMIC_ENABLED = os.getenv("CORRELATION_DYNAMIC_ENABLED", "true").lower() == "true"  # CR-0048
+    CORRELATION_MIN_THRESHOLD = float(os.getenv("CORRELATION_MIN_THRESHOLD", "0.70"))  # CR-0048
+    CORRELATION_MAX_THRESHOLD = float(os.getenv("CORRELATION_MAX_THRESHOLD", "0.92"))  # CR-0048
+    CORRELATION_LATENCY_TARGET_MS = float(os.getenv("CORRELATION_LATENCY_TARGET_MS", "400"))  # CR-0048
+    CORRELATION_ADJ_STEP = float(os.getenv("CORRELATION_ADJ_STEP", "0.01"))  # CR-0048
 
     # API retry / backoff
     RETRY_MAX_ATTEMPTS = int(os.getenv("RETRY_MAX_ATTEMPTS", "3"))
     RETRY_BACKOFF_BASE_SEC = float(os.getenv("RETRY_BACKOFF_BASE_SEC", "0.5"))
     RETRY_BACKOFF_MULT = float(os.getenv("RETRY_BACKOFF_MULT", "2.0"))
+    # Order submit idempotency
+    ORDER_DEDUP_TTL_SEC = float(os.getenv("ORDER_DEDUP_TTL_SEC", "5.0"))
 
     # Advanced trailing
-    ATR_TRAILING_START_R = float(os.getenv("ATR_TRAILING_START_R", "1.5"))
+    ATR_TRAILING_ENABLED = os.getenv("ATR_TRAILING_ENABLED", "true").lower() == "true"
+    ATR_TRAILING_START_R = float(os.getenv("ATR_TRAILING_START_R", "1.2"))
     ATR_TRAILING_MULT = float(os.getenv("ATR_TRAILING_MULT", "1.2"))
     ATR_TRAILING_COOLDOWN_SEC = int(os.getenv("ATR_TRAILING_COOLDOWN_SEC", "60"))
 
@@ -126,6 +179,38 @@ class Settings:
     # Market mode default
     MARKET_MODE = os.getenv("MARKET_MODE", "spot").lower()
 
+    # Metrics retention settings
+    METRICS_RETENTION_HOURS = int(os.getenv("METRICS_RETENTION_HOURS", "48"))  # CR-0046
+    METRICS_RETENTION_COMPRESS = os.getenv("METRICS_RETENTION_COMPRESS", "true").lower() == "true"
+
+    # Backup settings
+    BACKUP_MAX_SNAPSHOTS = int(os.getenv("BACKUP_MAX_SNAPSHOTS", "10"))  # CR-0047
+    BACKUP_RETENTION_DAYS = int(os.getenv("BACKUP_RETENTION_DAYS", "14"))  # CR-0047
+
+    # Param set override
+    PARAM_OVERRIDE_PATH = os.getenv("PARAM_OVERRIDE_PATH", "./data/param_overrides.json")  # CR-0050
+
+    # CR-0065: Slippage Guard Configuration
+    MAX_SLIPPAGE_BPS = float(os.getenv("MAX_SLIPPAGE_BPS", "50.0"))  # 0.5% = 50 basis points
+    SLIPPAGE_GUARD_POLICY = os.getenv("SLIPPAGE_GUARD_POLICY", "ABORT")  # ABORT or REDUCE
+    SLIPPAGE_REDUCTION_FACTOR = float(os.getenv("SLIPPAGE_REDUCTION_FACTOR", "0.5"))  # 50% reduction
+    # Clock skew guard
+    CLOCK_SKEW_WARN_MS = float(os.getenv("CLOCK_SKEW_WARN_MS", "500"))
+    CLOCK_SKEW_GUARD_ENABLED = os.getenv("CLOCK_SKEW_GUARD_ENABLED", "true").lower() == "true"
+
+    # --- Helpers ---
+    @classmethod
+    def get_commission_rates(cls) -> tuple[float, float]:
+        """(maker, taker) yuzde değerlerini döndür (0.04 => %0.04)."""
+        return (cls.MAKER_COMMISSION_PCT_PER_SIDE, cls.TAKER_COMMISSION_PCT_PER_SIDE)
+
+    @classmethod
+    def round_trip_cost_pct(cls) -> float:
+        """Round-trip tahmini maliyet (yuzde biriminde): 2 * (commission + slippage).
+        Geriye donuk uyum icin tekil COMMISSION_PCT_PER_SIDE kullanilir.
+        """
+        return 2.0 * (cls.COMMISSION_PCT_PER_SIDE + cls.SLIPPAGE_PCT_PER_SIDE)
+
 class RuntimeConfig:
     MARKET_MODE = Settings.MARKET_MODE
 
@@ -136,3 +221,85 @@ class RuntimeConfig:
     @classmethod
     def get_market_mode(cls) -> str:
         return cls.MARKET_MODE
+
+# --- Environment-based path scoping (optional) ---
+# Not: Env override (ENV var) mevcutsa kullanici tercihi korunur.
+def _detect_env_name() -> str:
+    try:
+        if Settings.OFFLINE_MODE:
+            return "offline"
+        if Settings.USE_TESTNET:
+            return "testnet"
+        return "prod"
+    except Exception:
+        return "prod"
+
+def _join(*parts: str) -> str:
+    return os.path.normpath(os.path.join(*parts))
+
+_env_iso = os.getenv("ENV_ISOLATION", Settings.ENV_ISOLATION).lower()
+if _env_iso in ("on", "auto"):
+    # Constants for file/folder names to avoid magic strings
+    DB_FILE_NAME = "trades.db"
+    _env = _detect_env_name()
+    _data_explicit = ("DATA_PATH" in os.environ)
+    _db_explicit = ("TRADES_DB_PATH" in os.environ)
+    _log_explicit = ("LOG_PATH" in os.environ)
+    _bkp_explicit = ("BACKUP_PATH" in os.environ)
+    _halt_explicit = ("DAILY_HALT_FLAG_PATH" in os.environ)
+    _metrics_explicit = ("METRICS_FILE_DIR" in os.environ)
+
+    # Normalize explicit overrides early to avoid being overwritten by derivation below
+    # This ensures determinism when tests mutate environment variables before import.
+    if _data_explicit:
+        Settings.DATA_PATH = os.environ.get("DATA_PATH", Settings.DATA_PATH)
+    if _db_explicit:
+        Settings.TRADES_DB_PATH = os.environ.get("TRADES_DB_PATH", Settings.TRADES_DB_PATH)
+
+    # TRADES_DB_PATH precedence (deterministic):
+    # 1) If TRADES_DB_PATH is explicit (real override) -> respect.
+    # 2) If DATA_PATH is explicit and TRADES_DB_PATH is not -> derive DATA_PATH/<env>/trades.db.
+    # 3) If both are explicit:
+    #    - If TRADES_DB_PATH has a custom filename (not trades.db) -> respect explicit override.
+    #    - Else if TRADES_DB_PATH is not under DATA_PATH (probable leak) -> derive under DATA_PATH.
+    def _norm(p: str) -> str:
+        return os.path.normcase(os.path.normpath(p))
+
+    if _db_explicit and not _data_explicit:
+        # Saf override senaryosu — explicit TRADES_DB_PATH korunur ve normalize edilir
+        Settings.TRADES_DB_PATH = os.path.normpath(Settings.TRADES_DB_PATH)
+    elif _data_explicit and not _db_explicit:
+        Settings.TRADES_DB_PATH = _join(Settings.DATA_PATH, _env, DB_FILE_NAME)
+    elif _data_explicit and _db_explicit:
+        try:
+            env_db = _norm(os.environ.get("TRADES_DB_PATH", ""))
+            # If custom filename is used, always respect explicit override (normalize path)
+            if os.path.basename(env_db).lower() != DB_FILE_NAME:
+                Settings.TRADES_DB_PATH = os.path.normpath(Settings.TRADES_DB_PATH)
+            else:
+                data_root = _norm(Settings.DATA_PATH)
+                if not env_db.startswith(data_root + os.path.sep) and env_db != data_root:
+                    # Probable leak: TRADES_DB_PATH is not under the provided DATA_PATH
+                    Settings.TRADES_DB_PATH = _join(Settings.DATA_PATH, _env, DB_FILE_NAME)
+        except Exception:
+            # Güvenli tarafta kal: türet
+            Settings.TRADES_DB_PATH = _join(Settings.DATA_PATH, _env, DB_FILE_NAME)
+    elif not _db_explicit:
+        # Neither DATA_PATH nor TRADES_DB_PATH explicit -> derive from default DATA_PATH
+        Settings.TRADES_DB_PATH = _join(Settings.DATA_PATH, _env, DB_FILE_NAME)
+
+    # LOG_PATH
+    if _data_explicit or not _log_explicit:
+        Settings.LOG_PATH = _join(Settings.DATA_PATH, "logs", _env)
+
+    # BACKUP_PATH (DATA_PATH'tan bagimsiz dizin yapisi)
+    if not _bkp_explicit:
+        Settings.BACKUP_PATH = _join("backup", _env)
+
+    # DAILY_HALT_FLAG_PATH
+    if _data_explicit or not _halt_explicit:
+        Settings.DAILY_HALT_FLAG_PATH = _join(Settings.DATA_PATH, _env, "daily_halt.flag")
+
+    # METRICS_FILE_DIR
+    if _data_explicit or not _metrics_explicit:
+        Settings.METRICS_FILE_DIR = _join(Settings.DATA_PATH, "processed", "metrics", _env)

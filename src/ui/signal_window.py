@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget, 
-                            QTableWidgetItem, QHeaderView, QPushButton, QLabel, 
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget,
+                            QTableWidgetItem, QHeaderView, QPushButton, QLabel,
                             QComboBox, QLineEdit, QTabWidget, QGroupBox, QSplitter, QApplication)
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QFont
@@ -134,7 +134,30 @@ class SignalWindow(QWidget):
         self.signal_table.setHorizontalHeaderLabels([
             "Parite", "Fiyat", "Sinyal", "Puan", "RSI", "MACD", "BB", "Stoch", "Williams", "CCI"
         ])
-        self.signal_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        # Sütun genişliklerini optimized hale getir
+        header = self.signal_table.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Parite
+        header.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Fiyat
+        header.setSectionResizeMode(2, QHeaderView.Fixed)             # Sinyal
+        header.setSectionResizeMode(3, QHeaderView.Fixed)             # Puan
+        header.setSectionResizeMode(4, QHeaderView.Fixed)             # RSI
+        header.setSectionResizeMode(5, QHeaderView.Fixed)             # MACD
+        header.setSectionResizeMode(6, QHeaderView.Fixed)             # BB
+        header.setSectionResizeMode(7, QHeaderView.Fixed)             # Stoch
+        header.setSectionResizeMode(8, QHeaderView.Fixed)             # Williams
+        header.setSectionResizeMode(9, QHeaderView.Stretch)          # CCI (son sütun uzat)
+
+        # Sabit sütun genişlikleri
+        self.signal_table.setColumnWidth(2, 80)   # Sinyal
+        self.signal_table.setColumnWidth(3, 60)   # Puan
+        self.signal_table.setColumnWidth(4, 60)   # RSI
+        self.signal_table.setColumnWidth(5, 70)   # MACD
+        self.signal_table.setColumnWidth(6, 60)   # BB
+        self.signal_table.setColumnWidth(7, 60)   # Stoch
+        self.signal_table.setColumnWidth(8, 80)   # Williams
+
         self.signal_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.signal_table.setSelectionMode(QTableWidget.SingleSelection)
         self.signal_table.itemSelectionChanged.connect(self.show_details)

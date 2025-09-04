@@ -5,6 +5,21 @@ from typing import Dict, List
 
 import pytest
 
+# CR-0065: SlippageGuard singleton state leakage'i önlemek için global reset fixture
+try:
+    from src.utils.slippage_guard import reset_slippage_guard  # type: ignore
+except Exception:  # pragma: no cover - module may be unavailable in partial envs
+    reset_slippage_guard = None  # type: ignore
+
+
+@pytest.fixture(autouse=True)
+def _reset_slippage_guard_between_tests():
+    if reset_slippage_guard is not None:
+        reset_slippage_guard()
+    yield
+    if reset_slippage_guard is not None:
+        reset_slippage_guard()
+
 _results: List[Dict] = []
 
 

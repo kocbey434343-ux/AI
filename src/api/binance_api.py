@@ -7,10 +7,14 @@ from config.settings import Settings, RuntimeConfig
 import time
 import random
 from src.utils.logger import get_logger
+from src.utils.prometheus_export import get_exporter_instance
 class BinanceAPI:
     def __init__(self, mode: str | None = None):
         self.mode = (mode or RuntimeConfig.get_market_mode()).lower()
         self.logger = get_logger("BinanceAPI")
+        # In-memory filters cache: { symbol: { 'filters': {type: obj}, 'ts': epoch_sec } }
+        self._filters_cache = {}
+        self._filters_cache_ttl_sec = 300.0  # simple TTL to avoid frequent exchange-info calls
         # Offline / test fallback: if OFFLINE_MODE skip real client heavy init (still create dummy for attribute safety)
         if Settings.OFFLINE_MODE:
             class _Dummy:
@@ -20,18 +24,26 @@ class BinanceAPI:
                     return _f
                 # Explicit helpers used elsewhere
                 def get_server_time(self):
-                    import time; return {"serverTime": int(time.time()*1000)}
+                    return {"serverTime": int(time.time()*1000)}
                 def get_klines(self, symbol, interval, limit=500):
                     # delegate to BinanceAPI offline generator through outer class later if needed
                     return []
             self.client = _Dummy()
-            self.logger.info("OFFLINE_MODE aktif: dummy Binance client kullanılıyor")
+            self.logger.info("OFFLINE_MODE aktif: dummy Binance client kullaniliyor")
         else:
+            # Operasyonel guvenlik: Prod yalnizca ALLOW_PROD=true ise acilir
+            if not Settings.USE_TESTNET and not Settings.ALLOW_PROD:
+                raise RuntimeError("Prod endpoint kapali: ALLOW_PROD=true olmadan prod'a baglanilamaz")
             self.client = Client(
                 api_key=Settings.BINANCE_API_KEY,
                 api_secret=Settings.BINANCE_API_SECRET,
                 testnet=Settings.USE_TESTNET
             )
+        # Metrics exporter (safe if not available)
+        try:
+            self.metrics = get_exporter_instance()
+        except Exception:
+            self.metrics = None
 
     # ---------- Helpers for filters ----------
     def _spot_symbol_info(self, symbol: str):
@@ -54,17 +66,32 @@ class BinanceAPI:
             return {f['filterType']: f for f in s.get('filters', [])}
         return {}
 
+    def _get_filters_cached(self, symbol: str, force_refresh: bool = False):
+        now = time.time()
+        cached = self._filters_cache.get(symbol)
+        if (not force_refresh) and cached and (now - cached.get('ts', 0)) < self._filters_cache_ttl_sec:
+            return cached.get('filters', {})
+        filters = self._get_filters(symbol)
+        self._filters_cache[symbol] = {'filters': filters, 'ts': now}
+        return filters
+
     def _round_step(self, value: float, step: float):
         if step in (0, None):
             return value
         return math.floor(value / step) * step
 
     def quantize(self, symbol: str, quantity: float, price: float | None = None):
-        filters = self._get_filters(symbol)
+        """Quantize amount and price according to exchange filters.
+        Rules:
+        - Quantity rounded down to LOT_SIZE.stepSize; if < minQty => return (0.0, px)
+        - Price rounded down to PRICE_FILTER.tickSize and >= minPrice when provided
+        - If price provided and NOTIONAL/MIN_NOTIONAL exists and qty*price < minNotional => return (0.0, px)
+        """
+        filters = self._get_filters_cached(symbol)
         # Quantity
         step = float(filters.get('LOT_SIZE', {}).get('stepSize', 0) or 0)
         min_qty = float(filters.get('LOT_SIZE', {}).get('minQty', 0) or 0)
-        # Yeni mantık: minQty altında kalan miktarı minQty'ye zorlamak yerine 0 döndür (işlem atlanır)
+    # Yeni mantik: minQty altinda kalan miktari minQty'ye zorlamak yerine 0 dondur (islem atlanir)
         if step:
             rounded = self._round_step(quantity, step)
             if quantity < min_qty:
@@ -80,6 +107,21 @@ class BinanceAPI:
             tick = float(filters.get('PRICE_FILTER', {}).get('tickSize', 0) or 0)
             min_price = float(filters.get('PRICE_FILTER', {}).get('minPrice', 0) or 0)
             px = max(self._round_step(price, tick), min_price) if tick else price
+
+        # Notional (spot: MIN_NOTIONAL, futures: NOTIONAL or MIN_NOTIONAL)
+        if px is not None and qty and qty > 0:
+            min_notional = None
+            # futures sometimes exposes NOTIONAL, spot MIN_NOTIONAL
+            if 'MIN_NOTIONAL' in filters:
+                mn = filters.get('MIN_NOTIONAL', {})
+                # Binance sometimes uses 'minNotional', sometimes 'notional'
+                min_notional = float(mn.get('minNotional') or mn.get('notional') or mn.get('minNotionalValue') or 0)
+            if (min_notional is None or min_notional == 0) and 'NOTIONAL' in filters:
+                mn = filters.get('NOTIONAL', {})
+                min_notional = float(mn.get('minNotional') or mn.get('notional') or mn.get('minNotionalValue') or 0)
+            if min_notional and (qty * (px or 0)) < float(min_notional):
+                # Do not auto-upsize risking more than requested; signal caller to skip
+                qty = 0.0
 
         return qty, px
 
@@ -98,7 +140,7 @@ class BinanceAPI:
                 ]
             # For futures, fallback to spot tickers for ranking simplicity
             tickers = self.client.get_ticker()
-            self.logger.debug(f"Ticker sayısı {len(tickers)}")
+            self.logger.debug(f"Ticker sayisi {len(tickers)}")
             return tickers
         except Exception as e:
             self.logger.error(f"get_ticker_24hr hata: {e}")
@@ -106,15 +148,15 @@ class BinanceAPI:
 
     def get_top_pairs(self, limit=150):
         try:
-            self.logger.info(f"Top {limit} pariteler alınıyor")
+            self.logger.info(f"Top {limit} pariteler aliniyor")
             tickers = self.get_ticker_24hr()
             if not tickers:
                 self.logger.warning("Ticker listesi boş döndü")
                 return []
-                
+
             usdt_pairs = [t for t in tickers if t.get('symbol','').endswith('USDT')]
-            self.logger.debug(f"USDT parite sayısı {len(usdt_pairs)}")
-            
+            self.logger.debug(f"USDT parite sayisi {len(usdt_pairs)}")
+
             # filter known stablecoins as base
             stable = {'USDT','USDC','BUSD','DAI','TUSD','USDP','USDK','USDN','USDX','HUSD','GUSD'}
             filtered = []
@@ -122,12 +164,12 @@ class BinanceAPI:
                 base = t['symbol'][:-4]
                 if base not in stable:
                     filtered.append(t)
-            
+
             sorted_pairs = sorted(filtered, key=lambda x: float(x.get('quoteVolume', 0.0) or 0.0), reverse=True)
             result = [p['symbol'] for p in sorted_pairs[:limit]]
             self.logger.info(f"Top pair sonucu {len(result)}")
             return result
-            
+
         except Exception as e:
             self.logger.error(f"get_top_pairs hata: {e}")
             return []
@@ -212,7 +254,7 @@ class BinanceAPI:
                     }
                 qty, px = self.quantize(symbol, quantity, price)
                 if qty is None or qty <= 0:
-                    self.logger.warning(f"{symbol} order iptal: hesaplanan miktar minQty altında (risk_qty={quantity})")
+                    self.logger.warning(f"{symbol} order iptal: hesaplanan miktar minQty altinda (risk_qty={quantity})")
                     return None
                 if self.mode == "futures":
                     if order_type == "MARKET":
@@ -253,12 +295,30 @@ class BinanceAPI:
                 return resp
             except BinanceAPIException as e:
                 last_err = e
-                # Backoff
+                # Rate limit metrics (429/418)
+                try:
+                    if getattr(e, 'status_code', None) in (418, 429):
+                        if self.metrics:
+                            self.metrics.record_rate_limit_hit(getattr(e, 'status_code', 'err'))
+                except Exception:
+                    pass
+                # Backoff and observe
                 sleep_sec = Settings.RETRY_BACKOFF_BASE_SEC * (Settings.RETRY_BACKOFF_MULT ** attempt)
+                try:
+                    if self.metrics:
+                        self.metrics.observe_backoff_seconds(sleep_sec)
+                except Exception:
+                    pass
                 time.sleep(sleep_sec)
                 attempt += 1
             except Exception as e:
                 last_err = e
+                # Generic short backoff for unknown errors
+                try:
+                    if self.metrics:
+                        self.metrics.observe_backoff_seconds(0.2)
+                except Exception:
+                    pass
                 time.sleep(0.2)
                 attempt += 1
         self.logger.error(f"Order error after retries: {last_err}")
@@ -275,7 +335,7 @@ class BinanceAPI:
         try:
             qty, _ = self.quantize(symbol, quantity, None)
             if qty is None or qty <= 0:
-                self.logger.warning(f"OCO iptal: {symbol} miktar minQty altında")
+                self.logger.warning(f"OCO iptal: {symbol} miktar minQty altinda")
                 return None
             # Quantize prices
             _, tp_px = self.quantize(symbol, qty, take_profit)
@@ -298,18 +358,126 @@ class BinanceAPI:
                         stop_limit_price = float(sl_px) * (1 + offset)
             except Exception:
                 pass
-            resp = self.client.create_oco_order(
-                symbol=symbol,
-                side=exit_side,
-                quantity=f"{qty}" if isinstance(qty, float) else qty,
-                price=f"{tp_px}" if isinstance(tp_px, float) else tp_px,
-                stopPrice=f"{sl_px}" if isinstance(sl_px, float) else sl_px,
-                stopLimitPrice=f"{stop_limit_price}" if isinstance(stop_limit_price, float) else stop_limit_price,
-                stopLimitTimeInForce='GTC'
-            )
-            return resp
+            try:
+                resp = self.client.create_oco_order(
+                    symbol=symbol,
+                    side=exit_side,
+                    quantity=f"{qty}" if isinstance(qty, float) else qty,
+                    price=f"{tp_px}" if isinstance(tp_px, float) else tp_px,
+                    stopPrice=f"{sl_px}" if isinstance(sl_px, float) else sl_px,
+                    stopLimitPrice=f"{stop_limit_price}" if isinstance(stop_limit_price, float) else stop_limit_price,
+                    stopLimitTimeInForce='GTC'
+                )
+                return resp
+            except Exception as oe:
+                # Fallback: OCO yoksa iki ayri emir dene (LIMIT TP + STOP_LOSS_LIMIT SL)
+                self.logger.warning(f"OCO failed, applying fallback for {symbol}: {oe}")
+                fallback_reports = []
+                try:
+                    tp_order = self.client.create_order(
+                        symbol=symbol,
+                        side=exit_side,
+                        type='LIMIT',
+                        quantity=f"{qty}" if isinstance(qty, float) else qty,
+                        price=f"{tp_px}" if isinstance(tp_px, float) else tp_px,
+                        timeInForce='GTC'
+                    )
+                    if isinstance(tp_order, dict) and tp_order.get('orderId') is not None:
+                        fallback_reports.append({'orderId': tp_order.get('orderId')})
+                except Exception as te:
+                    self.logger.error(f"Fallback TP LIMIT failed {symbol}: {te}")
+                try:
+                    sl_order = self.client.create_order(
+                        symbol=symbol,
+                        side=exit_side,
+                        type='STOP_LOSS_LIMIT',
+                        quantity=f"{qty}" if isinstance(qty, float) else qty,
+                        price=f"{stop_limit_price}" if isinstance(stop_limit_price, float) else stop_limit_price,
+                        stopPrice=f"{sl_px}" if isinstance(sl_px, float) else sl_px,
+                        timeInForce='GTC'
+                    )
+                    if isinstance(sl_order, dict) and sl_order.get('orderId') is not None:
+                        fallback_reports.append({'orderId': sl_order.get('orderId')})
+                except Exception as se:
+                    self.logger.error(f"Fallback SL STOP_LOSS_LIMIT failed {symbol}: {se}")
+                if fallback_reports:
+                    return {'orderReports': fallback_reports, 'fallback': True}
+                return None
         except Exception as e:
             self.logger.error(f"OCO order error {symbol}: {e}")
+            return None
+
+    def place_futures_protection(self, symbol: str, side: str, quantity: float, take_profit: float, stop_loss: float):
+        """Place futures protection orders (STOP_MARKET + TAKE_PROFIT_MARKET).
+        Returns dict with sl_id and tp_id or None if failed.
+        For BUY entry: exit with SELL orders
+        For SELL entry: exit with BUY orders
+        """
+        if self.mode != 'futures':
+            self.logger.error(f"place_futures_protection called in {self.mode} mode")
+            return None
+
+        if Settings.OFFLINE_MODE:
+            # Simulate successful futures protection
+            return {
+                'sl_id': f'sim_sl_{int(time.time()*1000)}',
+                'tp_id': f'sim_tp_{int(time.time()*1000)}',
+                'symbol': symbol
+            }
+
+        try:
+            qty, _ = self.quantize(symbol, quantity, None)
+            if qty is None or qty <= 0:
+                self.logger.warning(f"Futures protection iptal: {symbol} miktar minQty altinda")
+                return None
+
+            # Determine exit side
+            exit_side = 'SELL' if side.upper() == 'BUY' else 'BUY'
+
+            # Quantize protection prices
+            _, tp_px = self.quantize(symbol, qty, take_profit)
+            _, sl_px = self.quantize(symbol, qty, stop_loss)
+
+            if tp_px is None or sl_px is None:
+                self.logger.error(f"Price quantization failed: tp={tp_px}, sl={sl_px}")
+                return None
+
+            # Place STOP_MARKET order (stop loss)
+            sl_resp = self.client.futures_create_order(
+                symbol=symbol,
+                side=exit_side,
+                type='STOP_MARKET',
+                stopPrice=f"{sl_px}",
+                closePosition=True,
+                timeInForce='GTC'
+            )
+
+            # Place TAKE_PROFIT_MARKET order (take profit)
+            tp_resp = self.client.futures_create_order(
+                symbol=symbol,
+                side=exit_side,
+                type='TAKE_PROFIT_MARKET',
+                stopPrice=f"{tp_px}",
+                closePosition=True,
+                timeInForce='GTC'
+            )
+
+            if sl_resp and tp_resp:
+                result = {
+                    'sl_id': sl_resp.get('orderId'),
+                    'tp_id': tp_resp.get('orderId'),
+                    'symbol': symbol,
+                    'sl_resp': sl_resp,
+                    'tp_resp': tp_resp
+                }
+                self.logger.info(f"Futures protection placed: {symbol} SL:{result['sl_id']} TP:{result['tp_id']}")
+                return result
+            else:
+                self.logger.error(f"Futures protection failed: SL={bool(sl_resp)}, TP={bool(tp_resp)}")
+                return None
+
+        except Exception as e:
+            self.logger.error(f"Futures protection error {symbol}: {e}")
             return None
 
     def get_open_orders(self, symbol=None):
@@ -379,6 +547,14 @@ class BinanceAPI:
         response = None
         try:
             response = requests.get(endpoint, timeout=10)
+            # Observe X-MBX-USED-WEIGHT header if present
+            try:
+                if response is not None and hasattr(response, 'headers') and self.metrics:
+                    used_weight = response.headers.get('X-MBX-USED-WEIGHT-1m') or response.headers.get('X-MBX-USED-WEIGHT')
+                    if used_weight is not None:
+                        self.metrics.set_used_weight(float(used_weight))
+            except Exception:
+                pass
             response.raise_for_status()
             return response.json()
         except requests.exceptions.Timeout:
@@ -387,6 +563,11 @@ class BinanceAPI:
             if response is not None and hasattr(response, 'status_code'):
                 if response.status_code == 429:
                     self.logger.warning("Rate limit exceeded")
+                    try:
+                        if self.metrics:
+                            self.metrics.record_rate_limit_hit(429)
+                    except Exception:
+                        pass
                 else:
                     self.logger.error(f"HTTP Error: {e}")
             else:

@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import warnings
 import json
 from ta.momentum import RSIIndicator, StochasticOscillator, WilliamsRIndicator
 from ta.trend import EMAIndicator, MACD, CCIIndicator, ADXIndicator
@@ -25,73 +26,84 @@ class IndicatorCalculator:
             dict: A dictionary containing the calculated indicator values.
         """
         df = df.copy()
-        results = {}
-        for ic in self.indicators_config['indicators']:
-            name = ic.get('name')
-            params = ic.get('params', {})
-            try:
-                if name == "RSI":
-                    results[name] = RSIIndicator(close=df['close'], window=params.get('timeperiod', 14)).rsi()
-                elif name == "MACD":
-                    macd = MACD(close=df['close'],
-                                window_slow=params.get('slowperiod', 26),
-                                window_fast=params.get('fastperiod', 12),
-                                window_sign=params.get('signalperiod', 9))
-                    results[name] = {
-                        'macd': macd.macd(),
-                        'signal': macd.macd_signal(),
-                        'histogram': macd.macd_diff()
-                    }
-                elif name == "Bollinger Bands":
-                    bb = BollingerBands(close=df['close'],
-                                        window=params.get('timeperiod', 20),
-                                        window_dev=params.get('nbdevup', 2))
-                    results[name] = {
-                        'upper': bb.bollinger_hband(),
-                        'middle': bb.bollinger_mavg(),
-                        'lower': bb.bollinger_lband()
-                    }
-                elif name == "Stochastic":
-                    st = StochasticOscillator(
-                        high=df['high'], low=df['low'], close=df['close'],
-                        window=params.get('fastk_period', 14),
-                        smooth_window=params.get('slowk_period', 3)
-                    )
-                    results[name] = {
-                        'slowk': st.stoch(),
-                        'slowd': st.stoch_signal()
-                    }
-                elif name == "Williams %R":
-                    wr = WilliamsRIndicator(
-                        high=df['high'], low=df['low'], close=df['close'],
-                        lbp=params.get('timeperiod', 14)
-                    )
-                    results[name] = wr.williams_r()
-                elif name == "CCI":
-                    cci = CCIIndicator(
-                        high=df['high'], low=df['low'], close=df['close'],
-                        window=params.get('timeperiod', 20), constant=0.015
-                    )
-                    results[name] = cci.cci()
-                elif name == "ATR":
-                    atr = AverageTrueRange(
-                        high=df['high'], low=df['low'], close=df['close'],
-                        window=params.get('timeperiod', 14)
-                    )
-                    results[name] = atr.average_true_range()
-                elif name == "EMA":
-                    ema = EMAIndicator(close=df['close'], window=params.get('timeperiod', 50)).ema_indicator()
-                    results[name] = ema
-                elif name == "ADX":
-                    adx = ADXIndicator(high=df['high'], low=df['low'], close=df['close'], window=params.get('timeperiod', 14))
-                    results[name] = {
-                        'adx': adx.adx(),
-                        'plus_di': adx.adx_pos(),
-                        'minus_di': adx.adx_neg()
-                    }
-            except Exception:
-                # Tekil indikatör hatasını yut ve devam et
-                continue
+        results = {
+            'close': df['close']  # Add close price series for signal calculations
+        }
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=RuntimeWarning, module=r"ta\.trend")
+            with np.errstate(divide='ignore', invalid='ignore'):
+                for ic in self.indicators_config['indicators']:
+                    name = ic.get('name')
+                    params = ic.get('params', {})
+                    try:
+                        if name == "RSI":
+                            results[name] = RSIIndicator(close=df['close'], window=params.get('timeperiod', 14)).rsi()
+                        elif name == "MACD":
+                            macd = MACD(close=df['close'],
+                                        window_slow=params.get('slowperiod', 26),
+                                        window_fast=params.get('fastperiod', 12),
+                                        window_sign=params.get('signalperiod', 9))
+                            results[name] = {
+                                'macd': macd.macd(),
+                                'signal': macd.macd_signal(),
+                                'histogram': macd.macd_diff()
+                            }
+                        elif name == "Bollinger Bands":
+                            bb = BollingerBands(close=df['close'],
+                                                window=params.get('timeperiod', 20),
+                                                window_dev=params.get('nbdevup', 2))
+                            results[name] = {
+                                'upper': bb.bollinger_hband(),
+                                'middle': bb.bollinger_mavg(),
+                                'lower': bb.bollinger_lband()
+                            }
+                        elif name == "Stochastic":
+                            st = StochasticOscillator(
+                                high=df['high'], low=df['low'], close=df['close'],
+                                window=params.get('fastk_period', 14),
+                                smooth_window=params.get('slowk_period', 3)
+                            )
+                            results[name] = {
+                                'slowk': st.stoch(),
+                                'slowd': st.stoch_signal()
+                            }
+                        elif name == "Williams %R":
+                            wr = WilliamsRIndicator(
+                                high=df['high'], low=df['low'], close=df['close'],
+                                lbp=params.get('timeperiod', 14)
+                            )
+                            results[name] = wr.williams_r()
+                        elif name == "CCI":
+                            cci = CCIIndicator(
+                                high=df['high'], low=df['low'], close=df['close'],
+                                window=params.get('timeperiod', 20), constant=0.015
+                            )
+                            results[name] = cci.cci()
+                        elif name == "ATR":
+                            atr = AverageTrueRange(
+                                high=df['high'], low=df['low'], close=df['close'],
+                                window=params.get('timeperiod', 14)
+                            )
+                            results[name] = atr.average_true_range()
+                        elif name == "EMA":
+                            ema = EMAIndicator(close=df['close'], window=params.get('timeperiod', 50)).ema_indicator()
+                            results[name] = ema
+                        elif name == "ADX":
+                            adx = ADXIndicator(high=df['high'], low=df['low'], close=df['close'], window=params.get('timeperiod', 14))
+                            adx_dict = {
+                                'adx': adx.adx(),
+                                'plus_di': adx.adx_pos(),
+                                'minus_di': adx.adx_neg()
+                            }
+                            # Sanitize ADX outputs to avoid inf/NaN propagation
+                            for k, v in list(adx_dict.items()):
+                                if hasattr(v, 'replace'):
+                                    v = v.replace([np.inf, -np.inf], np.nan).fillna(method='bfill').fillna(method='ffill')
+                                    adx_dict[k] = v
+                            results[name] = adx_dict
+                    except Exception:
+                        # Tekil indikatör hatasını yut ve devam et
+                        continue
         return results
 
     def score_indicators(self, df: pd.DataFrame, indicators: dict):
@@ -279,6 +291,111 @@ class IndicatorCalculator:
         if score <= Settings.SELL_SIGNAL_THRESHOLD:
             return "SAT"
         return "BEKLE"
+
+    def _calculate_bollinger_signal(self, indicators):
+        """Bollinger Bands sinyal hesaplama"""
+        try:
+            bb_data = indicators.get('Bollinger Bands', {})
+            if not bb_data:
+                return {'value': 50, 'signal': 'NEUTRAL', 'error': 'No BB data'}
+
+            upper = bb_data['upper'].iloc[-1] if hasattr(bb_data.get('upper'), 'iloc') else bb_data.get('upper')
+            lower = bb_data['lower'].iloc[-1] if hasattr(bb_data.get('lower'), 'iloc') else bb_data.get('lower')
+            middle = bb_data['middle'].iloc[-1] if hasattr(bb_data.get('middle'), 'iloc') else bb_data.get('middle')
+
+            # Close price from indicators (now available)
+            close = indicators['close'].iloc[-1] if 'close' in indicators else middle
+
+            if not all([upper, lower, middle, close]):
+                return {'value': 50, 'signal': 'NEUTRAL', 'error': 'Missing BB values'}
+
+            # Band position
+            band_width = upper - lower
+            if band_width <= 0:
+                position = 0.5
+            else:
+                position = (close - lower) / band_width
+                position = max(0, min(1, position))  # Clamp 0-1
+
+            # Bollinger signal - more dynamic
+            if position < 0.2:
+                value = 20  # Near lower band - potential buy
+                signal = 'BUY'
+            elif position > 0.8:
+                value = 80  # Near upper band - potential sell
+                signal = 'SELL'
+            elif position > 0.6:
+                value = 65  # Above middle - bullish
+                signal = 'BUY'
+            elif position < 0.4:
+                value = 35  # Below middle - bearish
+                signal = 'SELL'
+            else:
+                value = 50  # Around middle - neutral
+                signal = 'NEUTRAL'
+
+            return {
+                'value': value,
+                'band_position': position,
+                'close': close,
+                'upper': upper,
+                'lower': lower,
+                'middle': middle,
+                'band_width': band_width,
+                'signal': signal
+            }
+        except Exception as e:
+            return {'value': 50, 'signal': 'NEUTRAL', 'error': f'BB calc error: {e!s}'}
+
+    def calculate_confluence_score(self, df):
+        """Calculate confluence score from RSI+MACD+BB"""
+        try:
+            indicators = self.calculate_all_indicators(df)
+
+            # Calculate individual component signals
+            rsi_value = indicators.get('RSI', pd.Series([50])).iloc[-1]
+            macd_hist = indicators.get('MACD', {}).get('histogram', pd.Series([0])).iloc[-1]
+            bb_signal = self._calculate_bollinger_signal(indicators)
+
+            # Convert to 0-100 scale signals
+            rsi_signal = {'value': rsi_value, 'signal': 'BUY' if rsi_value < 30 else 'SELL' if rsi_value > 70 else 'NEUTRAL'}
+
+            # MACD histogram signal
+            macd_value = 75 if macd_hist > 0 else 25 if macd_hist < 0 else 50
+            macd_signal = {'value': macd_value, 'signal': 'BUY' if macd_hist > 0 else 'SELL' if macd_hist < 0 else 'NEUTRAL'}
+
+            # Average the three signals
+            total_value = (rsi_signal['value'] + macd_signal['value'] + bb_signal['value']) / 3
+            confluence_score = min(100, max(0, total_value))
+
+            # Determine overall signal direction
+            buy_signals = sum(1 for sig in [rsi_signal, macd_signal, bb_signal] if sig['signal'] == 'BUY')
+            sell_signals = sum(1 for sig in [rsi_signal, macd_signal, bb_signal] if sig['signal'] == 'SELL')
+
+            if buy_signals >= 2:
+                direction = 'AL'
+            elif sell_signals >= 2:
+                direction = 'SAT'
+            else:
+                direction = 'BEKLE'
+
+            return {
+                'confluence_score': confluence_score,
+                'signal_direction': direction,
+                'component_signals': {
+                    'rsi': rsi_signal,
+                    'macd': macd_signal,
+                    'bollinger': bb_signal
+                }
+            }
+
+        except Exception as e:
+            return {
+                'confluence_score': 0.0,
+                'signal_direction': 'BEKLE',
+                'error': f'Confluence calc error: {e!s}',
+                'component_signals': {}
+            }
 
     # ---- Legacy test wrapper methods ----
     def calculate_rsi(self, df: pd.DataFrame):

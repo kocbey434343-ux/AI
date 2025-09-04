@@ -4,6 +4,8 @@ def test_trader_import_and_basic_api():
     mod = importlib.import_module('src.trader')
     Trader = mod.Trader
     t = Trader()
+    # Clean state for test isolation
+    t.positions.clear()
     assert t.get_open_positions() == {}
     assert t.execute_trade({'symbol':'BTCUSDT','signal':'AL'}) is False
     t.process_price_update('BTCUSDT', 50000.0)  # no crash

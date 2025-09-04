@@ -22,6 +22,9 @@ ignore = [
   "E501",  # line length handled by formatter (Black)
 ]
 
+[lint.per-file-ignores]
+"src/ui/main_window.py" = ["RUF001", "RUF002", "RUF003"] # allow non-ASCII UI strings and symbols
+
 [lint.isort]
 force-single-line = false
 known-first-party = ["src"]

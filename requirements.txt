@@ -8,3 +8,6 @@ ta==0.10.2
 websocket-client==1.8.0
 pytest==8.2.2
 pytest-qt==4.4.0
+ruff==0.5.7
+prometheus_client==0.20.0
+jsonschema==4.19.2

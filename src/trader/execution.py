@@ -1,12 +1,17 @@
 """Emir hazirlama, pozisyon acma-kaydetme ve kapama islemleri."""
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import Optional, Dict, Any, NamedTuple
-import time
+
 import contextlib
+import time
+from dataclasses import dataclass
+from typing import Any, Dict, NamedTuple, Optional
+
 import pandas as pd
 
 from config.settings import Settings
+from src.utils.order_state import OrderState  # FSM (CR-0063)
+from src.utils.slippage_guard import get_slippage_guard  # CR-0065
+from src.utils.structured_log import slog
 from .metrics import maybe_trim_metrics
 
 
@@ -90,24 +95,137 @@ def prepare_order_context(self, signal: Dict[str, Any], ctx: Dict[str, Any]):
     size = position_size(self, SizeInputs(symbol, balance, price, sl, signal))
     if not size or size <= 0:
         self.logger.info(f"{symbol} pozisyon acilmadi: size=0")
+        with contextlib.suppress(Exception):
+            slog('prepare_ctx_block', symbol=symbol, reason='size_zero')
         return None
     if not self.correlation_ok(symbol, price):
+        with contextlib.suppress(Exception):
+            slog('prepare_ctx_block', symbol=symbol, reason='correlation_block')
         return None
     max_loss = self.risk_manager.calculate_max_loss(price, sl, size)
     if max_loss > balance * 0.04:
         self.logger.info(f"{symbol} max_loss limit disi {max_loss:.2f}")
+        with contextlib.suppress(Exception):
+            slog('prepare_ctx_block', symbol=symbol, reason='max_loss')
         return None
     protected = self.risk_manager.apply_slippage_protection(sl, risk_side or 'long')
     return OrderContext(symbol, side, risk_side, price, sl, tp, protected, size, atr)
 
 
 def place_main_and_protection(self, oc: OrderContext):
-    # spot: market -> optional OCO
-    order = self.api.place_order(symbol=oc.symbol, side=oc.side, order_type='MARKET', quantity=oc.position_size, price=None)
+    """
+    Ana emir yerlestirir ve slippage kontrolu yapar (CR-0065)
+
+    Returns:
+        Order response veya None (slippage guard tarafindan iptal edilirse)
+    """
+    # Market order place et
+    order = self.api.place_order(
+        symbol=oc.symbol,
+        side=oc.side,
+        order_type='MARKET',
+        quantity=oc.position_size,
+        price=None
+    )
+
     if not order:
         return None
-    # (Protection emirleri - gelecekte OCO / stop / tp eklenebilir)
+
+    # Fill price'i al (API response'undan)
+    fill_price = _extract_fill_price(self, order, oc.symbol)
+    if fill_price is None:
+        self.logger.warning(f"{oc.symbol}: Fill price alinamadi, slippage kontrolu atlanacak")
+        return order
+
+    # CR-0065: Slippage guard kontrolu
+    slippage_guard = get_slippage_guard()
+    is_safe, corrective_action = slippage_guard.validate_order_execution({
+        'symbol': oc.symbol,
+        'side': oc.side,
+        'expected_price': oc.price,
+        'fill_price': fill_price,
+        'quantity': oc.position_size,
+        'order_id': order.get('orderId') if order else None
+    })
+
+    if not is_safe and corrective_action:
+        action = corrective_action.get('action', 'ABORT')
+
+        if action == 'ABORT':
+            # Order iptal et (eger mumkunse)
+            self.logger.error(f"{oc.symbol}: Slippage guard ABORT - "
+                            f"slippage: {corrective_action.get('slippage_bps', 0):.1f}bps")
+            slog('order_aborted', symbol=oc.symbol, reason='slippage_guard',
+                 action=corrective_action)
+
+            # Market order hemen doldugu icin iptal etmek zor
+            # Bu durumda pozisyonu hemen kapatmak gerekebilir
+            self._handle_slippage_abort(oc, order, corrective_action)
+            return None
+
+        if action == 'REDUCE':
+            # Position size'i azalt (gelecek emirler icin)
+            new_qty = corrective_action.get('new_qty')
+            if new_qty and new_qty < oc.position_size:
+                self.logger.warning(f"{oc.symbol}: Slippage guard REDUCE - "
+                                  f"next order qty: {new_qty:.6f}")
+                # Not: Bu order zaten execute oldu, bir sonraki trade icin kota azaltilabilir
+
     return order
+
+def _extract_fill_price(self, order: Dict[str, Any], symbol: str) -> Optional[float]:
+    """Order response'undan fill price'i extract et"""
+    try:
+        # Binance API response formats
+        if order.get('fills'):
+            # Market order fills array'i
+            fill = order['fills'][0]  # İlk fill'i al
+            return float(fill['price'])
+        p = order.get('price')
+        if p is not None:
+            return float(p)
+        ap = order.get('avgPrice')
+        if ap is not None:
+            return float(ap)
+        self.logger.warning(f"{symbol}: Order response'da price bulunamadi: {order.keys()}")
+        return None
+    except (KeyError, ValueError, IndexError) as e:
+        self.logger.error(f"{symbol}: Fill price extraction error: {e}")
+        return None
+
+def _handle_slippage_abort(self, oc: OrderContext, order: Dict[str, Any],
+                         corrective_action: Dict[str, Any]):
+    """Slippage abort durumunu handle et"""
+    # Market order zaten execute oldu, pozisyonu immediate close et
+    symbol = oc.symbol
+
+    # Pozisyonu track etme (slippage problemi olan pozisyon)
+    slippage_bps = corrective_action.get('slippage_bps', 0)
+    self.logger.error(f"{symbol}: Slippage guard forced close - "
+                     f"slippage {slippage_bps:.1f}bps exceeded threshold")
+
+    slog('slippage_forced_close', symbol=symbol, slippage_bps=slippage_bps,
+         order_id=order.get('orderId'), corrective_action=corrective_action)
+
+    # Immediate close order place et (emergency)
+    try:
+        opposite_side = 'SELL' if oc.side == 'BUY' else 'BUY'
+        close_order = self.api.place_order(
+            symbol=symbol,
+            side=opposite_side,
+            order_type='MARKET',
+            quantity=oc.position_size,
+            price=None
+        )
+
+        if close_order:
+            self.logger.info(f"{symbol}: Emergency close order placed due to slippage guard")
+        else:
+            self.logger.error(f"{symbol}: Emergency close order FAILED")
+
+    except Exception as e:
+        self.logger.error(f"{symbol}: Emergency close order exception: {e}")
+        # Manual intervention may be needed
 
 
 def place_protection_orders(self, oc: OrderContext, _fill_price: float):
@@ -115,6 +233,7 @@ def place_protection_orders(self, oc: OrderContext, _fill_price: float):
     Spot: OCO (SELL) - sadece long islemler varsayilir.
     Futures: Ayrik STOP_MARKET & TAKE_PROFIT_MARKET.
     Kayit: pozisyon dict icine order id referanslari.
+    Exception narrowing (CR-EXC-P2): Sadece beklenen runtime hatalari yakalanir.
     """
     if Settings.OFFLINE_MODE:
         return
@@ -135,7 +254,6 @@ def place_protection_orders(self, oc: OrderContext, _fill_price: float):
                 )
                 pos['oco_resp'] = {'ids': _extract_order_ids(resp)} if resp else None
         else:  # futures
-            # STOP
             sl_order = self.api.place_order(
                 symbol=oc.symbol,
                 side=exit_side,
@@ -158,8 +276,10 @@ def place_protection_orders(self, oc: OrderContext, _fill_price: float):
                 'sl_id': _extract_single_id(sl_order),
                 'tp_id': _extract_single_id(tp_order)
             }
-    except Exception as e:  # pragma: no cover
-        self.logger.warning(f"Koruma emirleri hata {oc.symbol}: {e}")
+    except (KeyError, ValueError, TypeError, AttributeError) as e:  # narrowed
+        self.logger.warning(f"Koruma emirleri hata (runtime) {oc.symbol}: {e}")
+    except Exception as e:  # pragma: no cover - beklenmeyen (logla ve devam)
+        self.logger.error(f"Koruma emirleri beklenmeyen hata {oc.symbol}: {e}")
 
 
 def _extract_order_ids(resp):  # helper best effort
@@ -238,38 +358,204 @@ def record_open(self, oc: OrderContext, fill: float, slip_bps: float | None, qty
     return trade_id
 
 
+def apply_partial_fill(self, oc: OrderContext, fill_price: float, fill_qty: float, slip_bps: float | None = None):
+    """CR-0012: Partial fill uygulama / biriktirme.
+    Ilk partial fill'de pozisyon kaydi olusturulur (position_size = hedef toplam oc.position_size),
+    sonraki partial fill'lerde remaining_size azaltilir ve ortalama entry yeniden hesaplanir.
+    """
+    if fill_qty <= 0:
+        return None
+    pos = self.positions.get(oc.symbol)
+    if not pos:
+        # ilk partial -> trade_store'a total size ile kayit
+        trade_id = None
+        with contextlib.suppress(Exception):
+            trade_id = self.trade_store.insert_open(
+                symbol=oc.symbol,
+                side=oc.side,
+                entry_price=fill_price,
+                size=oc.position_size,  # toplam hedef
+                opened_at=pd.Timestamp.utcnow().isoformat(),
+                strategy_tag='core',
+                stop_loss=oc.protected_stop,
+                take_profit=oc.take_profit,
+                param_set_id=Settings.PARAM_SET_ID,
+                entry_slippage_bps=slip_bps,
+                raw={'partial': True}
+            )
+        remaining = max(0.0, oc.position_size - fill_qty)
+        self.positions[oc.symbol] = {
+            'side': oc.side,
+            'entry_price': fill_price,
+            'position_size': oc.position_size,
+            'filled_size': fill_qty,
+            'remaining_size': remaining,
+            'stop_loss': oc.protected_stop,
+            'take_profit': oc.take_profit,
+            'atr': oc.atr,
+            'trade_id': trade_id,
+            'scaled_out': [],
+            'protection_qty': remaining  # ilk protection remaining bazli
+        }
+        return self.positions[oc.symbol]
+    # sonraki partial
+    total_size = pos.get('position_size', oc.position_size)
+    prev_filled = pos.get('filled_size', total_size - pos.get('remaining_size', 0.0))
+    new_filled = prev_filled + fill_qty
+    new_filled = min(new_filled, total_size)
+    # VWAP entry update
+    try:
+        old_entry = float(pos.get('entry_price', fill_price))
+        if prev_filled + fill_qty > 0 and new_filled > 0:
+            pos['entry_price'] = ((old_entry * prev_filled) + (fill_price * fill_qty)) / new_filled
+    except (ValueError, TypeError, ZeroDivisionError) as e:  # narrowed
+        self.logger.debug(f"apply_partial_fill entry vwap skip:{oc.symbol}:{e}")
+    pos['filled_size'] = new_filled
+    pos['remaining_size'] = max(0.0, total_size - new_filled)
+    return pos
+
+
+def maybe_revise_protection_orders(self, symbol: str):
+    """CR-0012: Partial fill sonrasi koruma emir miktar revizyonu.
+    Offline modda sadece state alanlarini gunceller; gercek modda iptal & yeniden
+    yerlestirme gelecekte eklenecek.
+    """
+    pos = self.positions.get(symbol)
+    if not pos:
+        return False
+    remaining = pos.get('remaining_size', 0.0)
+    # offline: sadece protection_qty alanini sync et
+    prev = pos.get('protection_qty')
+    pos['protection_qty'] = remaining
+    _ZERO_TOL = 1e-12
+    if abs(remaining) < _ZERO_TOL:
+        pos['protection_cleared'] = True
+    return prev != remaining
+
+
 def open_position(self, signal: Dict[str, Any], ctx: Dict[str, Any]):
     oc = prepare_order_context(self, signal, ctx)
     if not oc:
         return False
+
+    # Idempotent submit guard (CR-0083)
+    try:
+        from src.utils.order_dedup import get_order_dedup  # local import to avoid cycles
+        dedup = get_order_dedup()
+        dedup_key = f"{oc.symbol}|{oc.side}|{self.market_mode}|{round(oc.price, 8)}|{round(oc.position_size, 8)}"
+        if not dedup.should_submit(dedup_key):
+            with contextlib.suppress(Exception):
+                slog('order_submit_dedup', action='skip', key=dedup_key, symbol=oc.symbol, side=oc.side)
+            self.logger.info(f"{oc.symbol} idempotent skip (dedup)")
+            return False
+        dedup.mark_submitted(dedup_key)
+        with contextlib.suppress(Exception):
+            slog('order_submit_dedup', action='mark', key=dedup_key, symbol=oc.symbol, side=oc.side)
+    except Exception:
+        # Dedup sistemi basarisiz olsa bile trade devam edebilir
+        pass
+
+    # FSM: INIT -> SUBMITTING
+    state_manager = getattr(self, 'state_manager', None)
+    if state_manager:
+        state_manager.transition_to(oc.symbol, OrderState.SUBMITTING)
+
     t0 = time.time()
-    order = place_main_and_protection(self, oc)
+    # Retry/backoff (CR-0083): place_main_and_protection icin jitterli exponential backoff
+    order = _place_with_retry(self, oc)
     if not order:
+        if state_manager:
+            state_manager.transition_to(oc.symbol, OrderState.ERROR, reason="Order placement failed")
         return False
+
     fill, slip_bps, exec_qty = extract_fills(order, oc.price, oc.side, oc.position_size)
-    record_open(self, oc, fill, slip_bps, exec_qty)
+
+    # FSM: SUBMITTING -> OPEN
+    if state_manager:
+        state_manager.transition_to(oc.symbol, OrderState.OPEN)
+
+    trade_id = record_open(self, oc, fill, slip_bps, exec_qty)
+
     # Koruma emirleri (gercek)
     place_protection_orders(self, oc, fill)
+
+    # FSM: OPEN -> ACTIVE
+    if state_manager:
+        state_manager.transition_to(oc.symbol, OrderState.ACTIVE)
+
     latency_ms = (time.time() - t0) * 1000
     self.recent_open_latencies.append(latency_ms)
     if slip_bps is not None:
         self.recent_entry_slippage_bps.append(float(slip_bps))
-    # Trim metric list lengths
     maybe_trim_metrics(self)
     self.logger.info(f"ACILDI {oc.symbol} {oc.side} size={exec_qty:.6f} entry={fill:.4f} sl={oc.protected_stop:.4f} tp={oc.take_profit:.4f} slip={slip_bps}")
+    # Structured log
+    slog(
+        'trade_open',
+        symbol=oc.symbol,
+        side=oc.side,
+        size=exec_qty,
+        entry=fill,
+        stop=oc.protected_stop,
+        take_profit=oc.take_profit,
+        latency_ms=round(latency_ms, 2),
+        slip_bps=slip_bps,
+        trade_id=trade_id
+    )
     return True
+
+
+def _place_with_retry(self, oc: OrderContext):
+    """Ana emri retry/backoff ile dener, basarili olursa order dondurur, yoksa None.
+    Jitterli exponential backoff kullanir ve metrik/log kaydi yapar.
+    """
+    order = None
+    attempt = 0
+    max_attempts = max(1, int(getattr(Settings, 'RETRY_MAX_ATTEMPTS', 3)))
+    base = float(getattr(Settings, 'RETRY_BACKOFF_BASE_SEC', 0.5))
+    mult = float(getattr(Settings, 'RETRY_BACKOFF_MULT', 2.0))
+    while attempt < max_attempts:
+        order = place_main_and_protection(self, oc)
+        if order:
+            return order
+        attempt += 1
+        if attempt >= max_attempts:
+            break
+        # Jitterli exponential backoff
+        try:
+            import random
+            sleep_sec = base * (mult ** (attempt - 1))
+            jitter = random.uniform(0.8, 1.2)
+            sleep_sec = max(0.05, min(10.0, sleep_sec * jitter))
+        except Exception:
+            sleep_sec = 0.2
+        # Metrics + slog
+        with contextlib.suppress(Exception):
+            if hasattr(self, 'metrics') and self.metrics:
+                self.metrics.observe_backoff_seconds(sleep_sec)
+                self.metrics.record_order_submit_retry('order_place_fail')
+            slog('order_submit_retry', symbol=oc.symbol, attempt=attempt, max_attempts=max_attempts, sleep_sec=round(sleep_sec, 3))
+        time.sleep(sleep_sec)
+    return None
 
 
 def close_position(self, symbol: str):
     pos = self.positions.get(symbol)
     if not pos:
         return False
+
+    state_manager = getattr(self, 'state_manager', None)
+    if state_manager:
+        state_manager.transition_to(symbol, OrderState.CLOSING)
+
     t0 = time.time()
-    # basit market kapatma (ters emir)
     opposite = 'SELL' if pos['side'] == 'BUY' else 'BUY'
     order = self.api.place_order(symbol=symbol, side=opposite, order_type='MARKET', quantity=pos['remaining_size'], price=None)
     if not order:
+        if state_manager:
+            state_manager.transition_to(symbol, OrderState.ERROR, reason="Close order placement failed")
         return False
+
     fill, slip_bps, _ = extract_fills(order, pos['entry_price'], opposite, pos['remaining_size'])
     with contextlib.suppress(Exception):
         if pos.get('trade_id') is not None:
@@ -281,6 +567,19 @@ def close_position(self, symbol: str):
         self.recent_exit_slippage_bps.append(float(slip_bps))
     maybe_trim_metrics(self)
     self.logger.info(f"KAPANDI {symbol} lat={latency:.1f}ms slip={slip_bps}")
+    slog(
+        'trade_close',
+        symbol=symbol,
+        latency_ms=round(latency, 2),
+        slip_bps=slip_bps,
+        fill=fill,
+        trade_id=pos.get('trade_id')
+    )
+
+    if state_manager:
+        state_manager.transition_to(symbol, OrderState.CLOSED)
+        state_manager.clear_state(symbol)
+
     return True
 
 

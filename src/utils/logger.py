@@ -2,35 +2,90 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 import time
-from config.settings import Settings
+from config.settings import Settings  # original reference (fallback)
 from datetime import datetime
+from typing import Optional
+from importlib import import_module
 
 _LOGGER_CACHE = {}
 
+# --- CR-0043 Redaction Filter ---
+class _RedactionFilter(logging.Filter):
+    def __init__(self, api_key: Optional[str], secret: Optional[str]):
+        super().__init__()
+        self.api_key = api_key or ''
+        self.secret = secret or ''
+        self.mask_key = self._mask(self.api_key)
+        self.mask_secret = self._mask(self.secret)
+
+    @staticmethod
+    def _mask(val: str) -> str:
+        if not val:
+            return val
+        if len(val) <= 6:
+            return '*' * len(val)
+        return f"{val[:4]}***{val[-2:]}"
+
+    def _redact(self, text: str) -> str:
+        if not text:
+            return text
+        if self.api_key and self.api_key in text:
+            text = text.replace(self.api_key, self.mask_key)
+        if self.secret and self.secret in text:
+            text = text.replace(self.secret, self.mask_secret)
+        return text
+
+    def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover (format path tested via file read)
+        try:
+            # Build original message safely
+            msg = record.getMessage()
+            redacted = self._redact(msg)
+            if redacted != msg:
+                record.msg = redacted
+                record.args = ()
+        except Exception:
+            pass
+        return True
+
+
+def _current_settings():  # CR-0043 dynamic settings accessor
+    try:
+        mod = import_module('config.settings')
+        return getattr(mod, 'Settings', Settings)
+    except Exception:  # pragma: no cover
+        return Settings
+
+
 def get_logger(name: str) -> logging.Logger:
-    """İsim bazlı singleton logger. Dönen logger'da dönen handler tekrar eklenmez.
-    RotatingFileHandler ile log boyutu sınırlandırılır.
-    """
+    """İsim bazlı singleton logger.
+    CR-0043: Dinamik Settings yeniden yükleme (env değişiklikleri testte yansısın)."""
     if name in _LOGGER_CACHE:
         return _LOGGER_CACHE[name]
 
+    S = _current_settings()
+    level = getattr(logging, getattr(S, 'LOG_LEVEL', 'INFO').upper(), logging.INFO)
     logger = logging.getLogger(name)
-    logger.setLevel(getattr(logging, Settings.LOG_LEVEL.upper(), logging.INFO))
+    logger.setLevel(level)
     logger.propagate = False
 
-    os.makedirs(Settings.LOG_PATH, exist_ok=True)
-    log_file = os.path.join(Settings.LOG_PATH, f"{name}.log")
+    log_path = getattr(S, 'LOG_PATH', './data/logs')
+    os.makedirs(log_path, exist_ok=True)
+    log_file = os.path.join(log_path, f"{name}.log")
 
     formatter = logging.Formatter('%(asctime)s %(levelname)s %(name)s - %(message)s')
 
-    # Rotating file handler (5 MB * 3 backups)
     file_handler = RotatingFileHandler(log_file, maxBytes=5_000_000, backupCount=3, encoding='utf-8')
-    file_handler.setLevel(getattr(logging, Settings.LOG_LEVEL.upper(), logging.INFO))
+    file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
 
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(getattr(logging, Settings.LOG_LEVEL.upper(), logging.INFO))
+    console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
+
+    redaction_filter = _RedactionFilter(getattr(S, 'BINANCE_API_KEY', None), getattr(S, 'BINANCE_API_SECRET', None))
+    if getattr(S, 'BINANCE_API_KEY', None) or getattr(S, 'BINANCE_API_SECRET', None):
+        file_handler.addFilter(redaction_filter)
+        console_handler.addFilter(redaction_filter)
 
     logger.addHandler(file_handler)
     logger.addHandler(console_handler)

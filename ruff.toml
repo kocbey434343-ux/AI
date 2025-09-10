@@ -23,7 +23,11 @@ ignore = [
 ]
 
 [lint.per-file-ignores]
-"src/ui/main_window.py" = ["RUF001", "RUF002", "RUF003"] # allow non-ASCII UI strings and symbols
+"tests/test_*_simple.py" = ["RUF001", "RUF002", "RUF003", "PLR2004"]
+"tests/test_a32_*.py" = ["RUF001", "RUF002", "RUF003", "PLR2004", "F841", "F521"]
+"src/ui/main_window.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/test_a32_microstructure.py" = ["PLR2004", "PLR0915", "ERA001"] # test constants and equality checks
+"src/utils/microstructure.py" = ["PLR6301"] # global statement for singleton pattern
 
 [lint.isort]
 force-single-line = false

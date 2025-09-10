@@ -11,3 +11,7 @@ pytest-qt==4.4.0
 ruff==0.5.7
 prometheus_client==0.20.0
 jsonschema==4.19.2
+
+# ML dependencies
+scikit-learn==1.4.2
+scipy==1.11.4

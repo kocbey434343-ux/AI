@@ -1,0 +1,122 @@
+GitHub & Data Directory Inventory (Generated 2025-08-24)
+====================================================
+Scope: .github configuration, data directory structure, processed files.
+
+1. .github/copilot-instructions.md (SSoT)
+-----------------------------------------
+Purpose: Single Source of Truth document containing all governance, backlog, CR/ADR records, and agent behavior rules.
+Content: (Already extensively documented as primary SSoT reference)
+Status: Active governance document (rev v1.35)
+Usage: Agent behavioral guidelines, project decisions authority, CR/ADR tracking.
+
+2. .github/prompts/prompt.prompt.md
+-----------------------------------
+Purpose: Agent mode configuration and high-level trading bot development instructions.
+Content: 
+ - mode: agent directive
+ - Turkish language instruction
+ - Core mission: crypto trading bot development with focus on fundamentals over speculation
+ - Behavioral directive: autonomous operation without excessive permission requests
+Function: Provides context for AI agent behavior and project objectives.
+Gap: Could be expanded with more specific technical guidance or linked to SSoT sections.
+
+3. data/top_150_pairs.json
+--------------------------
+Purpose: Cached list of top trading pairs from Binance by volume, used for analysis and signal generation.
+Format: JSON array of symbol strings (e.g., "BTCUSDT", "SOLUSDT", etc.)
+Usage: Input for DataFetcher.load_top_pairs(), updated periodically by update_top_pairs().
+Content: 150 USDT-quoted trading pairs sorted by trading volume.
+Refresh Logic: Auto-refreshed when age >60 minutes or via force flag.
+Gaps: No metadata (refresh timestamp, volume data); could include pair ranking or volume info.
+
+4. data/raw/*.csv
+-----------------
+Purpose: Historical OHLCV price data for individual trading pairs.
+Format: CSV with columns: timestamp, open, high, low, close, volume.
+Naming: {SYMBOL}_{TIMEFRAME}.csv (e.g., BTCUSDT_1h.csv).
+Coverage: 1-hour timeframe data for symbols in top_150_pairs.json.
+Size: Variable per symbol; typical range 30-90 days based on BACKTEST_DAYS setting.
+Usage: Input for indicator calculation, signal generation, calibration backtesting.
+Maintenance: Updated via DataFetcher.fetch_all_pairs_data(); validated via validate_dataset().
+
+5. data/processed/calibration.json
+----------------------------------
+Purpose: Results of calibration optimization containing suggested thresholds and performance metrics.
+Content: Global score distribution, suggested/applied thresholds, per-symbol trade statistics, optimization candidates.
+Generation: Output of backtest.calibrate.run_calibration() function.
+Usage: Threshold recommendations for UI; performance analysis; strategy optimization.
+Fields: Contains winrate, expectancy, max_consecutive_losses, ADX/ATR percentiles.
+
+6. data/processed/optimization_candidates.json
+----------------------------------------------
+Purpose: Grid search results for threshold optimization ranked by performance metrics.
+Content: List of threshold combinations with corresponding expectancy, winrate, max_drawdown.
+Usage: Alternative threshold sets for A/B testing or fallback strategies.
+Generation: Byproduct of calibration with optimize=True flag.
+
+7. data/processed/metrics/*.jsonl
+---------------------------------
+Purpose: Time-series metrics data in JSON Lines format for observability and analysis.
+Format: One JSON object per line with timestamp, metric type, and values.
+Naming: metrics_{YYYYMMDD}_{HHMM}.jsonl (minute-based bucketing).
+Content: Trading metrics, latency measurements, slippage data, anomaly events.
+Retention: Managed by METRICS_FLUSH_INTERVAL_SEC setting and trimming logic.
+Usage: Performance monitoring, anomaly detection, historical analysis.
+
+8. data/processed/signals_{TIMESTAMP}.json
+------------------------------------------
+Purpose: Historical signal generation outputs for analysis and debugging.
+Format: JSON containing signal decisions, indicator values, and metadata.
+Content: Symbol-wise signals with scores, thresholds, raw indicators, contributions.
+Naming: signals_{YYYYMMDD}_{HHMMSS}.json.
+Usage: Signal analysis, threshold tuning, indicator contribution study.
+Lifecycle: Generated during signal processing; may accumulate over time.
+
+9. data/logs/*.log
+------------------
+Purpose: Application log files organized by component with rotation.
+Structure: Rotating log files (5MB x 3 rotations) per component.
+Examples: BinanceAPI.log, Calibration.log, Backtest.log, etc.
+Format: Human-readable log entries with timestamps, levels, component names.
+Management: Automatic rotation via RotatingFileHandler; configured log levels.
+Usage: Debugging, audit trail, error investigation.
+
+10. data/trades.db (SQLite)
+---------------------------
+Purpose: Persistent storage for trading history, positions, executions, and metrics.
+Schema: trades, executions, metrics tables with migration support.
+Usage: Trade record keeping, PnL calculation, performance analysis, state persistence.
+Management: Migrations via apply_migrations.py; schema versioning via user_version.
+Access: Through TradeStore class providing ORM-like interface.
+
+Cross-Directory Observations
+----------------------------
+ - data/raw serves as input layer for analysis pipeline
+ - data/processed contains derived analytics and optimization results
+ - data/logs provides operational visibility and debugging capability
+ - .github contains governance and agent configuration
+ - Clear separation between raw data, processed results, and system logs
+
+Data Flow Summary
+-----------------
+1. top_150_pairs.json → raw CSV fetch → processed analytics → optimization results
+2. Real-time metrics → JSONL files → analysis and anomaly detection
+3. Trading operations → SQLite trades.db → performance tracking
+4. Signal generation → timestamped JSON → threshold optimization feedback loop
+
+Storage Management Gaps
+-----------------------
+ - No automated cleanup policy for old processed files
+ - Raw CSV files may grow large without size monitoring
+ - JSONL metrics files lack compression or archival strategy
+ - No backup/restore procedures documented for critical data
+
+Recommended Improvements
+-----------------------
+ - Add data retention policies and cleanup automation
+ - Implement compressed archival for historical metrics
+ - Create data backup/restore utilities
+ - Add data integrity validation for critical files
+ - Consider partitioning strategies for large datasets
+
+End of github_data_inventory.txt

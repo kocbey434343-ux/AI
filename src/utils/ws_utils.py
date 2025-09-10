@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import Sequence
+
 
 def should_restart_ws(last_check_ts: float,
                       now_ts: float,

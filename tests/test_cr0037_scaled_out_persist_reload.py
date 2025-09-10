@@ -5,6 +5,7 @@ from src.utils.structured_log import clear_slog_events
 
 def test_cr0037_scaled_out_persist_and_reload(monkeypatch, tmp_path):
     os.environ['TRADES_DB_PATH'] = str(tmp_path / 'scaled_out_v3.db')
+    os.environ['ENABLE_POSITION_RELOAD'] = '1'  # Enable position reload for restart test
     monkeypatch.setattr('config.settings.Settings.OFFLINE_MODE', True, raising=False)
     clear_slog_events()
     t = Trader()

@@ -1,21 +1,20 @@
-"""Global exposure metriği hesaplayıcısı.
+"""Global exposure metrigi hesaplayicisi.
 
-Risk yönetimi için pozisyon dağılım analizi:
-- Sembol bazlı risk dağılımı
-- Yön (LONG/SHORT) dağılımı
-- Toplam exposure oranı
-- Konsantrasyon risk skorları
+Risk yonetimi icin pozisyon dagilim analizi:
+- Sembol bazli risk dagilimi
+- Yon (LONG/SHORT) dagilimi
+- Toplam exposure orani
+- Konsantrasyon risk skorlari
 """
 
-from typing import Dict, Any
-import json
+from typing import Any, Dict
 
 
 def calculate_global_exposure(positions: list[dict]) -> Dict[str, Any]:
     """Global exposure metrik hesapla.
 
     Args:
-        positions: Açık pozisyon listesi [{'symbol','side','position_size','entry_price',...}]
+        positions: Acik pozisyon listesi [{'symbol','side','position_size','entry_price',...}]
 
     Returns:
         {
@@ -91,13 +90,13 @@ def calculate_global_exposure(positions: list[dict]) -> Dict[str, Any]:
     risk_warnings = []
 
     if max_single_exposure_pct > 30.0:
-        risk_warnings.append(f"Yüksek konsantrasyon riski: En büyük pozisyon %{max_single_exposure_pct:.1f}")
+        risk_warnings.append(f"Yuksek konsantrasyon riski: En buyuk pozisyon %{max_single_exposure_pct:.1f}")
 
     if concentration_score > 0.5:
-        risk_warnings.append("Düşük diversifikasyon: Risk dağılımı yetersiz")
+        risk_warnings.append("Dusuk diversifikasyon: Risk dagilimi yetersiz")
 
     if len(by_symbol) < 3 and total_exposure > 1000:  # Arbitrary threshold
-        risk_warnings.append("Az sembol çeşitliliği: Daha fazla diversifikasyon önerilir")
+        risk_warnings.append("Az sembol cesitliligi: Daha fazla diversifikasyon onerilir")
 
     long_short_ratio = 0.0
     if by_side['SHORT']['exposure_usdt'] > 0:
@@ -106,7 +105,7 @@ def calculate_global_exposure(positions: list[dict]) -> Dict[str, Any]:
         long_short_ratio = float('inf')
 
     if long_short_ratio > 5.0 or (long_short_ratio < 0.2 and long_short_ratio > 0):
-        risk_warnings.append("Dengesiz LONG/SHORT dağılımı")
+        risk_warnings.append("Dengesiz LONG/SHORT dagilimi")
 
     return {
         'total_exposure_usdt': round(total_exposure, 2),
@@ -136,7 +135,7 @@ def format_exposure_summary(exposure_data: Dict[str, Any]) -> str:
     summary += f"L/S: {long_pct:.1f}%/{short_pct:.1f}% | "
     summary += f"Diversifikasyon: {div:.2f} | "
     if warnings > 0:
-        summary += f"⚠️ {warnings} risk uyarısı"
+        summary += f"⚠️ {warnings} risk uyarisi"
     else:
         summary += "✅ Risk dengeli"
 

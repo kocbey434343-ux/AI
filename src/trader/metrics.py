@@ -1,13 +1,15 @@
 """Metrik toplama, flush ve anomaly tespiti."""
 from __future__ import annotations
+
 import json
 import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
 
 from config.settings import Settings
+
 from src.utils.structured_log import slog
 
 
@@ -172,3 +174,49 @@ def maybe_trim_metrics(self):
                 self.recent_exit_slippage_bps = self.recent_exit_slippage_bps[-max_n:]
     except Exception:
         pass
+
+
+# Global metrics instance (singleton pattern with enhanced thread safety)
+_metrics_instance = None
+_metrics_lock = threading.RLock()  # Enhanced: RLock for recursive locking
+
+
+def get_metrics_instance():
+    """Get or create global metrics instance with thread-safe double-checked locking.
+
+    Returns:
+        Metrics instance (typically a Trader instance with metrics capabilities)
+    """
+    global _metrics_instance
+
+    # Double-checked locking pattern for thread safety
+    if _metrics_instance is None:
+        with _metrics_lock:
+            if _metrics_instance is None:
+                # Create a basic metrics container if no trader instance available
+                from types import SimpleNamespace
+
+                _metrics_instance = SimpleNamespace()
+                _metrics_instance.recent_open_latencies = []
+                _metrics_instance.recent_close_latencies = []
+                _metrics_instance.recent_entry_slippage_bps = []
+                _metrics_instance.recent_exit_slippage_bps = []
+                _metrics_instance.guard_counters = {}
+                _metrics_instance.metrics_lock = threading.RLock()
+                _metrics_instance.MAX_RECENT_SAMPLES = 500
+                _metrics_instance._last_metrics_flush = time.time()
+                _metrics_instance._anomaly_flagged = {"latency": False, "slip": False}
+                _metrics_instance._original_risk_percent = None
+
+                # Add methods with thread-safe access
+                _metrics_instance.metrics_snapshot = lambda: metrics_snapshot(_metrics_instance)
+                _metrics_instance._initialized = True  # Mark as properly initialized
+
+    return _metrics_instance
+
+
+def set_metrics_instance(instance):
+    """Set the global metrics instance with thread safety (typically called by Trader)."""
+    global _metrics_instance
+    with _metrics_lock:
+        _metrics_instance = instance

@@ -1,0 +1,54 @@
+Tests Inventory (Part 2) Generated 2025-08-24
+===========================================
+Scope: Metrics, anomaly detection, trailing persistence/history, guards, closure.
+
+Metrics Core
+------------
+test_metrics.py
+ - Validates TradeStore.recent_metrics filtering (global & key-specific) and size limits.
+ - Ensures ordering consistency and key whitelist.
+
+test_metrics_trimming.py
+ - Exercises maybe_trim_metrics trimming logic across four metric lists.
+ - Verifies tail preservation and no-trim path.
+
+test_metrics_unrealized_snapshot.py
+ - CR-0017 coverage: snapshot contains unrealized_total_pnl_pct with 0 in absence of positions; positive after price move.
+
+Anomaly Risk Adjustment
+-----------------------
+test_anomaly_risk_reduction.py
+ - Latency anomaly triggers risk_percent *= ANOMALY_RISK_MULT then restores after recovery.
+ - Slippage anomaly triggers independently and is idempotent.
+
+test_anomaly_risk_restore.py
+ - Combined latency then slippage anomalies; ensures restore only after both cleared.
+ - Internal _original_risk_percent reset assertion.
+
+Trailing & Persistence
+----------------------
+test_trailing_persist.py
+ - Partial exit + trailing interaction; notes scaled_out not persisted on reload (future CR required).
+
+test_trailing_history.py
+ - CR-0016 coverage: trailing stop updates persisted to DB trades.stop_loss and executions (trailing_update rows).
+ - Restart reload retains final stop_loss.
+
+test_trailing_and_guards.py
+ - Outlier bar guard blocks trade on > OUTLIER_RETURN_THRESHOLD_PCT move.
+ - ATR + classic trailing combined update events generate structured slog events (trailing_classic_update, trailing_atr_update) with expected stop levels.
+ - close_position removes from in-memory state and marks DB trade closed.
+
+Observations / Gaps
+-------------------
+ - No explicit negative tests for sanity rules in runtime_thresholds (e.g., invalid gap).
+ - ATR trailing test relies on structured_log events; ensures integration of both classic and ATR trailing paths.
+ - scaled_out persistence gap explicitly documented by test (actionable CR seed).
+
+Next Actions
+------------
+ - Proceed to Part 3 (remaining tests: reconciliation diffs, position sizing edge, secret scanning, UI tabs/labels, websocket utils, tag creation, etc.).
+ - Consider adding test for runtime_costs load/persist path.
+ - Add failure-path tests for anomaly functions (e.g., insufficient samples not triggering anomalies).
+
+End of tests_inventory_part2.txt

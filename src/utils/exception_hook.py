@@ -10,11 +10,15 @@ Usage:
 Idempotent: multiple calls reuse same hook.
 """
 from __future__ import annotations
-import sys, threading, traceback
+
+import sys
+import threading
+import traceback
 from types import TracebackType
 from typing import Type
-from src.utils.structured_log import slog
+
 from src.utils.logger import get_logger
+from src.utils.structured_log import slog
 
 _LOGGER = get_logger("ExceptionHook")
 _INSTALLED = False

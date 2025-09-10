@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from collections import defaultdict
-from typing import Dict, Callable
-from .order_state import OrderState, assert_transition, StateTransition
-from .structured_log import slog
+from typing import Callable, Dict
+
 from .logger import get_logger
+from .order_state import OrderState, StateTransition, assert_transition
+from .structured_log import slog
 
 LOGGER = get_logger("StateManager")
 

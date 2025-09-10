@@ -1,7 +1,7 @@
 {
   "buy": 50.19,
-  "sell": 16.82,
+  "sell": 16.66,
   "buy_exit": 45.19,
-  "sell_exit": 21.82,
-  "source": "best_candidate"
+  "sell_exit": 21.66,
+  "source": "overrides"
 }

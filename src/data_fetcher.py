@@ -1,12 +1,15 @@
-import os
 import json
+import os
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+
 import pandas as pd
-from datetime import datetime, timedelta
+from config.settings import Settings
+
 from src.api.binance_api import BinanceAPI
 from src.utils.logger import get_logger
-from config.settings import Settings
-from concurrent.futures import ThreadPoolExecutor
 from src.utils.structured_log import slog  # CR-0028 events
+
 
 class DataFetcher:
     def __init__(self):
@@ -16,25 +19,25 @@ class DataFetcher:
         self.ensure_directories()
 
     def ensure_directories(self):
-        """Gerekli dizinleri oluştur"""
+        """Gerekli dizinleri olustur"""
         os.makedirs(f"{self.data_path}/raw", exist_ok=True)
         os.makedirs(f"{self.data_path}/processed", exist_ok=True)
         os.makedirs(f"{self.data_path}/logs", exist_ok=True)
 
     def update_top_pairs(self, limit: int | None = None):
-        """Top N (varsayılan 150) parite listesini güncelle.
+        """Top N (varsayilan 150) parite listesini guncelle.
 
-        Spot USDT çifti olup base'i stable olmayanları 24h quoteVolume'a göre sıralar.
+        Spot USDT cifti olup base'i stable olmayanlari 24h quoteVolume'a gore siralar.
         """
         limit = limit or Settings.TOP_PAIRS_COUNT
         try:
-            self.logger.info(f"Top {limit} parite listesi güncelleniyor...")
+            self.logger.info(f"Top {limit} parite listesi guncelleniyor...")
             top_pairs = self.api.get_top_pairs(limit)
             if not top_pairs:
-                self.logger.warning("API boş liste döndürdü; önceki liste korunuyor")
+                self.logger.warning("API bos liste dondurdu; onceki liste korunuyor")
                 return False
 
-            # JSON dosyasına kaydet (pretty + sorted uniq)
+            # JSON dosyasina kaydet (pretty + sorted uniq)
             unique = []
             for p in top_pairs:
                 if p not in unique:
@@ -44,20 +47,20 @@ class DataFetcher:
             with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(unique, f, indent=2)
 
-            self.logger.info(f"{len(unique)} parite güncellendi ve kaydedildi: {file_path}")
+            self.logger.info(f"{len(unique)} parite guncellendi ve kaydedildi: {file_path}")
             return True
         except Exception as e:
-            self.logger.error(f"Parite güncelleme hatası: {str(e)}")
+            self.logger.error(f"Parite guncelleme hatasi: {e!s}")
             return False
 
     def load_top_pairs(self, ensure: bool = True):
-        """Top parite listesini yükle; eksik / yetersiz ise opsiyonel güncelle.
+        """Top parite listesini yukle; eksik / yetersiz ise opsiyonel guncelle.
 
         ensure=True iken:
           - Dosya yoksa
-          - Boşsa
-          - Sayı istenen limitten azsa
-          - Dosya çok eskiyse (varsayılan 60 dk)
+          - Bossa
+          - Sayi istenen limitten azsa
+          - Dosya cok eskiyse (varsayilan 60 dk)
         otomatik update tetiklenir.
         """
         limit = Settings.TOP_PAIRS_COUNT
@@ -71,19 +74,19 @@ class DataFetcher:
                 with open(file_path, "r", encoding="utf-8") as f:
                     pairs = json.load(f) or []
                 if not isinstance(pairs, list):
-                    self.logger.warning("Parite listesi formatı bozuk, yeniden güncellenecek")
+                    self.logger.warning("Parite listesi formati bozuk, yeniden guncellenecek")
                     needs_update = True
                 elif len(pairs) < limit:
-                    self.logger.info(f"Parite listesi eksik ({len(pairs)}/{limit}), güncellenecek")
+                    self.logger.info(f"Parite listesi eksik ({len(pairs)}/{limit}), guncellenecek")
                     needs_update = True
                 elif age_min > 60:  # 1 saatten eskiyse tazele
                     self.logger.info(f"Parite listesi {age_min:.1f} dk eski, tazeleniyor")
                     needs_update = True
             except Exception as e:
-                self.logger.warning(f"Parite listesi okunamadı ({e}), yeniden alınacak")
+                self.logger.warning(f"Parite listesi okunamadi ({e}), yeniden alinacak")
                 needs_update = True
         else:
-            self.logger.info("Parite listesi dosyası yok, oluşturulacak")
+            self.logger.info("Parite listesi dosyasi yok, olusturulacak")
             needs_update = True
 
         if ensure and needs_update:
@@ -94,7 +97,7 @@ class DataFetcher:
                 except Exception:
                     pairs = []
 
-        # Geçici analiz limiti uygula (dosyayı bozmadan sadece dönen listede kısıtla)
+        # Gecici analiz limiti uygula (dosyayi bozmadan sadece donen listede kisitla)
         try:
             limit_override = getattr(Settings, 'ANALYSIS_PAIRS_LIMIT', 0) or 0
             if limit_override and isinstance(limit_override, int) and limit_override > 0:
@@ -132,7 +135,7 @@ class DataFetcher:
                 if s not in pairs:
                     pairs.append(s)
         result = {'stale': [], 'fresh': [], 'errors': {}}
-        # Epoch bazlı yaş hesabı (timezone farklarını önlemek için)
+        # Epoch bazli yas hesabi (timezone farklarini onlemek icin)
         import time as _time
         now_ts = _time.time()
         for sym in pairs:
@@ -263,7 +266,7 @@ class DataFetcher:
         return result
 
     def ensure_top_pairs(self, force: bool = False):
-        """Dışarıdan çağrı için: force veya yetersizlik durumunda güncelle."""
+        """Disaridan cagri icin: force veya yetersizlik durumunda guncelle."""
         pairs = self.load_top_pairs(ensure=not force)
         if force or len(pairs) < Settings.TOP_PAIRS_COUNT:
             self.update_top_pairs(Settings.TOP_PAIRS_COUNT)
@@ -271,23 +274,23 @@ class DataFetcher:
         return pairs
 
     def fetch_pair_data(self, symbol, days=30, interval="1h"):
-        """Belirli bir paritenin verilerini çek"""
+        """Belirli bir paritenin verilerini cek"""
         try:
-            self.logger.info(f"{symbol} verileri çekiliyor...")
+            self.logger.info(f"{symbol} verileri cekiliyor...")
             df = self.api.get_historical_data(symbol, interval, days)
 
-            # CSV dosyasına kaydet
+            # CSV dosyasina kaydet
             file_path = f"{self.data_path}/raw/{symbol}_{interval}.csv"
             df.to_csv(file_path, index=False)
 
             self.logger.info(f"{symbol} verileri kaydedildi: {file_path}")
             return True
         except Exception as e:
-            self.logger.error(f"{symbol} veri çekme hatası: {str(e)}")
+            self.logger.error(f"{symbol} veri cekme hatasi: {e!s}")
             return False
 
     def fetch_all_pairs_data(self, days=30, interval="1h"):
-        """Tüm paritelerin verilerini çek"""
+        """Tum paritelerin verilerini cek"""
         pairs = self.load_top_pairs()
         success_count = 0
 
@@ -295,7 +298,7 @@ class DataFetcher:
             if self.fetch_pair_data(pair, days, interval):
                 success_count += 1
 
-        self.logger.info(f"{success_count}/{len(pairs)} parite başarıyla çekildi")
+        self.logger.info(f"{success_count}/{len(pairs)} parite basariyla cekildi")
         return success_count == len(pairs)
 
     # ---------------- Validation & Maintenance -----------------
@@ -310,21 +313,21 @@ class DataFetcher:
             return None
 
     def validate_dataset(self, interval="1h", repair=False, min_rows=50):
-        """Kayıtlı veri setini bütünlük açısından kontrol eder.
+        """Kayitli veri setini butunluk acisindan kontrol eder.
 
         Args:
-            interval (str): Zaman aralığı
-            repair (bool): Eksik veya bozuksa yeniden çekmeyi dener
-            min_rows (int): Geçerli sayılması için minimum satır
+            interval (str): Zaman araligi
+            repair (bool): Eksik veya bozuksa yeniden cekmeyi dener
+            min_rows (int): Gecerli sayilmasi icin minimum satir
         """
         raw_dir = f"{self.data_path}/raw"
         if not os.path.isdir(raw_dir):
-            self.logger.warning("Ham veri klasörü yok, atlanıyor")
+            self.logger.warning("Ham veri klasoru yok, atlaniyor")
             return False
 
         csv_files = [f for f in os.listdir(raw_dir) if f.endswith(f"_{interval}.csv")]
         if not csv_files:
-            self.logger.warning("Doğrulanacak CSV bulunamadı")
+            self.logger.warning("Dogrulanacak CSV bulunamadi")
             return False
 
         ok = 0
@@ -332,7 +335,7 @@ class DataFetcher:
             symbol = file.replace(f"_{interval}.csv", "")
             df = self._read_pair(symbol, interval)
             if df is None:
-                self.logger.warning(f"{symbol}: okunamadı")
+                self.logger.warning(f"{symbol}: okunamadi")
                 if repair:
                     self.fetch_pair_data(symbol, days=Settings.BACKTEST_DAYS, interval=interval)
                 continue
@@ -340,30 +343,30 @@ class DataFetcher:
             if 'timestamp' not in df.columns:
                 problems.append('timestamp missing')
             if len(df) < min_rows:
-                problems.append(f'yetersiz satır ({len(df)})')
+                problems.append(f'yetersiz satir ({len(df)})')
             if df.isna().sum().sum() > 0:
-                problems.append('NA değerler var')
+                problems.append('NA degerler var')
             if problems:
                 self.logger.warning(f"{symbol}: sorun -> {', '.join(problems)}")
                 if repair:
-                    self.logger.info(f"{symbol} yeniden çekiliyor (onarım)")
+                    self.logger.info(f"{symbol} yeniden cekiliyor (onarim)")
                     self.fetch_pair_data(symbol, days=Settings.BACKTEST_DAYS, interval=interval)
             else:
                 ok += 1
-        self.logger.info(f"Veri doğrulama tamamlandı: {ok}/{len(csv_files)} temiz")
+        self.logger.info(f"Veri dogrulama tamamlandi: {ok}/{len(csv_files)} temiz")
         return ok == len(csv_files)
 
     def get_pair_data(self, symbol, interval="1h", auto_fetch=True):
-        """Diskten parite verilerini yükle; yoksa çek ve normalize et"""
+        """Diskten parite verilerini yukle; yoksa cek ve normalize et"""
         file_path = f"{self.data_path}/raw/{symbol}_{interval}.csv"
 
-        # Eğer veri yoksa çek
+        # Eger veri yoksa cek
         if not os.path.exists(file_path) and auto_fetch:
-            self.logger.warning(f"{symbol} verisi bulunamadı, çekiliyor...")
+            self.logger.warning(f"{symbol} verisi bulunamadi, cekiliyor...")
             if not self.fetch_pair_data(symbol, 30, interval):
                 return None
 
-        # Veriyi yükle
+        # Veriyi yukle
         if os.path.exists(file_path):
             try:
                 return pd.read_csv(file_path, parse_dates=['timestamp'])
@@ -374,12 +377,12 @@ class DataFetcher:
                 try:
                     df = pd.read_csv(file_path)
                 except Exception as read_e:
-                    self.logger.error(f"{symbol} CSV okunamadı: {read_e}")
+                    self.logger.error(f"{symbol} CSV okunamadi: {read_e}")
                     return None
 
                 # Look for candidate time columns
                 candidates = [c for c in df.columns if any(k in c.lower() for k in ['time', 'date', 'timestamp', 't'])]
-                self.logger.info(f"{symbol} için zaman sütunu adayları: {candidates}")
+                self.logger.info(f"{symbol} icin zaman sutunu adaylari: {candidates}")
 
                 timestamp_col = None
                 for c in candidates:
@@ -402,7 +405,7 @@ class DataFetcher:
 
                         # If timestamp conversion failed for all, attempt fallback using index
                         if df['timestamp'].isna().all():
-                            self.logger.warning(f"{symbol}: timestamp dönüşümü başarısız, index'ten denenecek")
+                            self.logger.warning(f"{symbol}: timestamp donusumu basarisiz, index'ten denenecek")
                             try:
                                 df['timestamp'] = pd.to_datetime(df.index, errors='coerce')
                             except Exception:
@@ -416,10 +419,10 @@ class DataFetcher:
                         self.logger.error(f"{symbol} timestamp normalize edilemedi: {conv_e}")
                         return None
                 else:
-                    self.logger.error(f"{symbol} için zaman sütunu bulunamadı: {file_path}")
+                    self.logger.error(f"{symbol} icin zaman sutunu bulunamadi: {file_path}")
                     return None
 
-        # Dosya hiç yok
+        # Dosya hic yok
         return None
 
     def backup_data(self):
@@ -427,12 +430,12 @@ class DataFetcher:
         import shutil
         from datetime import datetime
 
-        # Ana yedek klasörünü garanti et, alt klasörü copytree oluşturacak
+        # Ana yedek klasorunu garanti et, alt klasoru copytree olusturacak
         os.makedirs(Settings.BACKUP_PATH, exist_ok=True)
         backup_dir = f"{Settings.BACKUP_PATH}/backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         try:
-            # Windows'ta hedef klasör onceden olusturulmus ise hata almamak icin dirs_exist_ok kullan
+            # Windows'ta hedef klasor onceden olusturulmus ise hata almamak icin dirs_exist_ok kullan
             shutil.copytree(self.data_path, backup_dir, dirs_exist_ok=True)
             self.logger.info(f"Veriler yedeklendi: {backup_dir}")
             return True
@@ -447,7 +450,7 @@ class DataFetcher:
 
     def fetch_data(self, source):
         """Fetch data from a single source."""
-        raise NotImplementedError(f"fetch_data() henüz implemente edilmedi: source={source}")
+        raise NotImplementedError(f"fetch_data() henuz implemente edilmedi: source={source}")
 
     def auto_refresh_stale(self, interval: str = "1h", max_age_minutes: int = 120, batch_limit: int = 10, days: int | None = None):
         """Automatically refresh stale or missing pair data (CR-0041).

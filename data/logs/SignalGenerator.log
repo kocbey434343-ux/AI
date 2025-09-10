@@ -223,3 +223,200 @@
 2025-08-23 09:19:36,797 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_091936.json
 2025-08-23 10:22:57,472 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_102257.json
 2025-08-23 10:24:44,215 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_102444.json
+2025-08-23 16:51:40,811 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_165140.json
+2025-08-23 17:28:30,426 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_172830.json
+2025-08-23 18:04:16,140 INFO SignalGenerator - Sinyaller kaydedildi: ./data/processed/signals_20250823_180416.json
+2025-08-25 23:35:00,664 WARNING SignalGenerator -                    timestamp    close  volume     high      low     open
+0 2025-08-25 23:34:59.869834  50000.0  1000.0  51000.0  49000.0  49500.0 için veri bulunamadı
+2025-08-25 23:35:01,450 WARNING SignalGenerator -                    timestamp    close  volume     high      low     open
+0 2025-08-25 23:30:00.664098  50000.0  1000.0  51000.0  49000.0  49500.0 için veri bulunamadı
+2025-08-26 11:01:46,812 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:09:55,589 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:11:30,663 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:14:51,859 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:17:17,308 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:19:04,512 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:28:34,632 WARNING SignalGenerator - Confluence scoring failed: 'IndicatorCalculator' object has no attribute 'calculate_confluence_score'
+2025-08-26 12:28:34,932 WARNING SignalGenerator - Confluence scoring failed: 'IndicatorCalculator' object has no attribute 'calculate_confluence_score'
+2025-08-26 12:33:45,023 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-08-26 12:45:29,761 WARNING SignalGenerator - MATICUSDT için veri bulunamadı
+2025-09-04 00:33:20,288 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 00:33:20,290 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 00:33:20,291 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 00:33:20,291 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 00:33:20,292 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 00:33:20,292 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 00:42:15,447 WARNING SignalGenerator - BTCUSDT: Lookahead bias nedeniyle sinyal bloklandı
+2025-09-04 00:55:43,802 WARNING SignalGenerator - BTCUSDT: Lookahead bias nedeniyle sinyal bloklandı
+2025-09-04 01:40:37,971 WARNING SignalGenerator - BTCUSDT: Lookahead bias nedeniyle sinyal bloklandı
+2025-09-04 01:43:50,222 WARNING SignalGenerator - BTCUSDT: Lookahead bias nedeniyle sinyal bloklandı
+2025-09-04 01:43:59,273 WARNING SignalGenerator - BTCUSDT: Lookahead bias nedeniyle sinyal bloklandı
+2025-09-04 01:44:07,434 WARNING SignalGenerator - BTCUSDT: Lookahead bias nedeniyle sinyal bloklandı
+2025-09-04 01:57:03,879 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 01:57:03,885 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 01:57:03,886 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 01:57:03,887 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 01:57:03,887 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 01:57:03,888 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:02,237 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:02,238 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:02,239 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:02,239 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:02,240 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:02,245 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:07,973 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:07,974 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:07,974 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:07,975 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:07,975 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-04 02:09:07,979 WARNING SignalGenerator - Confluence scoring failed: 'DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:01:32,165 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:01:32,167 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:01:32,250 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:02:18,357 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:02:18,360 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:02:18,363 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:12:02,647 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:12:02,651 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:12:02,654 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:17:50,638 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:17:50,642 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:17:50,646 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:28:19,384 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:28:19,387 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:28:19,390 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:35:01,227 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:35:01,231 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:35:01,233 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:49:02,668 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:49:02,671 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:49:02,673 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:57:15,319 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:57:15,322 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-05 23:57:15,324 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:03:09,474 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:03:15,349 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:04:53,590 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:04:53,592 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:04:53,595 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:08:02,126 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:08:34,840 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:09:17,336 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:09:17,336 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:09:17,344 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:12:11,277 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:12:11,280 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:12:11,283 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:19:47,067 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:19:47,070 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:19:47,072 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:23:20,126 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:23:20,129 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:23:20,132 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:25:20,812 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:25:27,842 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:29:50,875 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:29:50,877 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:29:50,880 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:30:51,935 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:30:51,937 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:30:51,940 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:38:07,925 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:44:57,804 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:45:40,616 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:45:40,619 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:45:40,621 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:48:15,940 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:48:15,943 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:48:15,946 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:51:15,973 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:51:54,122 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:51:54,125 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:51:54,128 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:54:38,990 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:54:38,995 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 00:54:38,998 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:01:41,335 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:01:41,339 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:01:41,342 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:24:54,065 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:24:54,067 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:24:54,068 INFO SignalGenerator - HTF_TRACE bias=long sig=SAT tf=4h enabled=True
+2025-09-06 01:24:54,068 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=long raw=SAT tf=4h
+2025-09-06 01:24:54,069 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:24:54,069 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:24:54,069 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:24:54,071 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:24:54,072 INFO SignalGenerator - HTF_TRACE bias=short sig=AL tf=4h enabled=True
+2025-09-06 01:24:54,072 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=short raw=AL tf=4h
+2025-09-06 01:24:54,072 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:24:54,072 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:24:54,072 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:28:34,450 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:28:34,451 INFO SignalGenerator - HTF_TRACE bias=long sig=SAT tf=4h enabled=True
+2025-09-06 01:28:34,451 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=long raw=SAT tf=4h
+2025-09-06 01:28:34,452 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:28:34,452 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:28:34,452 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:29:04,374 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:29:04,374 INFO SignalGenerator - HTF_TRACE bias=long sig=SAT tf=4h enabled=True
+2025-09-06 01:29:04,375 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=long raw=SAT tf=4h
+2025-09-06 01:29:04,375 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:29:04,375 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:29:04,376 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:30:21,716 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:30:21,719 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:30:21,806 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:31:21,277 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:49,158 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:49,162 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:49,163 INFO SignalGenerator - HTF_TRACE bias=long sig=SAT tf=4h enabled=True
+2025-09-06 01:34:49,163 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=long raw=SAT tf=4h
+2025-09-06 01:34:49,163 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:34:49,166 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:49,167 INFO SignalGenerator - HTF_TRACE bias=short sig=AL tf=4h enabled=True
+2025-09-06 01:34:49,167 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=short raw=AL tf=4h
+2025-09-06 01:34:49,167 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:34:57,367 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:57,369 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:57,369 INFO SignalGenerator - HTF_TRACE bias=long sig=SAT tf=4h enabled=True
+2025-09-06 01:34:57,369 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=long raw=SAT tf=4h
+2025-09-06 01:34:57,369 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:34:57,375 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:34:57,375 INFO SignalGenerator - HTF_TRACE bias=short sig=AL tf=4h enabled=True
+2025-09-06 01:34:57,376 WARNING SignalGenerator - HTF_BLOCKED need_block=True bias=short raw=AL tf=4h
+2025-09-06 01:34:57,376 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:36:41,248 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:36:41,251 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:36:41,252 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:36:41,255 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:36:41,255 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:40:49,621 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:40:49,626 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:40:49,626 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:40:49,631 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:40:49,631 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 01:42:12,093 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:42:12,097 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:42:12,097 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 01:42:12,102 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 01:42:12,102 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 05:38:56,163 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 05:38:56,164 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 05:38:56,165 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 05:38:56,165 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 07:16:52,095 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:16:52,100 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:16:52,100 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 07:16:52,105 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:16:52,105 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 07:19:20,469 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:19:20,474 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:19:20,474 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 07:19:20,476 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:19:20,478 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0
+2025-09-06 07:19:25,274 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:19:25,279 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:19:25,280 WARNING SignalGenerator - HTF_BIAS long for TESTUSDT tf=4h first=100.0 last=119.0
+2025-09-06 07:19:25,285 WARNING SignalGenerator - Confluence scoring failed: '_DummyIndicatorCalc' object has no attribute 'calculate_confluence_score'
+2025-09-06 07:19:25,286 WARNING SignalGenerator - HTF_BIAS short for TESTUSDT tf=4h first=300.0 last=281.0

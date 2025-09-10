@@ -7,16 +7,17 @@ import argparse
 import os
 import signal
 import sys
-import time
 import threading
+import time
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 # Python path'e proje dizinini ekle
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from config.runtime_thresholds import load_runtime_thresholds
 from config.settings import Settings
+
 from src.data_fetcher import DataFetcher
 from src.trader.core import Trader
 from src.utils.feature_flags import flag_enabled
@@ -91,8 +92,8 @@ class HeadlessRunner:
         self.logger.info("Validating environment...")
         problems = []
 
-        # Check API keys
-        if not Settings.BINANCE_API_KEY or not Settings.BINANCE_API_SECRET:
+        # Check API keys (skip in offline mode)
+        if not Settings.OFFLINE_MODE and (not Settings.BINANCE_API_KEY or not Settings.BINANCE_API_SECRET):
             problems.append('BINANCE API keys missing (check .env file)')
 
         # Check required directories
@@ -183,8 +184,7 @@ class HeadlessRunner:
             if not Settings.OFFLINE_MODE:
                 self.logger.error("Data fetcher is critical for online mode, aborting initialization")
                 return False
-            else:
-                self.logger.warning("Data fetcher failed in offline mode, continuing with existing data")
+            self.logger.warning("Data fetcher failed in offline mode, continuing with existing data")
 
         # Initialize trading core
         try:

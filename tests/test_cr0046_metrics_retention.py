@@ -16,6 +16,7 @@ def test_cr0046_metrics_retention(monkeypatch, tmp_path):
     t = Trader()
     t.recent_open_latencies = [10,20,30]
     maybe_flush_metrics(t, force=True)
-    files = list(Path(S.METRICS_FILE_DIR).glob('metrics_*'))
+    # Check in the correct tmp directory, not the default one
+    files = list(tmp_path.glob('metrics_*'))
     # With retention 0 they should be deleted
     assert not files

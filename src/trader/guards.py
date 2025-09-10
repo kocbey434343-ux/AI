@@ -4,13 +4,21 @@ Trader icersinden cagrilacak pure/helper fonksiyonlar.
 Yan etkiler: self.guard_counters gunceller, log yazar.
 """
 from __future__ import annotations
+
 import contextlib
-from pathlib import Path
 import os
+import threading
 import time
-from typing import Dict, Any, Optional, Tuple
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+
 from config.settings import Settings
+
 from src.utils.lookahead_guard import get_lookahead_guard
+from src.utils.structured_log import slog  # Import moved to top to fix E402
+
+if TYPE_CHECKING:
+    from src.trader.core import Trader
 
 # Freshness window for considering halt flag under pytest (seconds)
 PYTEST_HALT_FRESH_SECONDS = 10
@@ -24,7 +32,7 @@ def map_signal(label: str) -> Tuple[Optional[str], Optional[str]]:
     return None, None
 
 
-def check_halt_flag(self) -> bool:
+def check_halt_flag(self: 'Trader') -> bool:
     # If risk escalation feature is disabled, ignore halt flag for tests/legacy mode
     if not getattr(Settings, 'RISK_ESCALATION_ENABLED', True):
         return True
@@ -52,47 +60,65 @@ def check_halt_flag(self) -> bool:
     return True
 
 
-def check_daily_risk_limits(self) -> bool:
+def check_daily_risk_limits(self: 'Trader') -> bool:
     halt_flag = Path(Settings.DAILY_HALT_FLAG_PATH)
-    with contextlib.suppress(Exception):
+
+    try:
         daily_pnl = self.trade_store.daily_realized_pnl_pct()
         if daily_pnl <= -Settings.MAX_DAILY_LOSS_PCT:
             self.logger.warning(f"Daily loss threshold exceeded {daily_pnl:.2f}% -> halt")
-            with contextlib.suppress(Exception):
+            try:
                 halt_flag.write_text("daily loss halt")
+            except (OSError, IOError) as e:
+                self.logger.error(f"Failed to write halt flag: {e}")
+
             self.guard_counters['daily_loss'] += 1
             # CR-0069: Record guard event with loss data
             if hasattr(self, 'trade_store') and hasattr(self.trade_store, 'guard_events'):
-                from src.utils.guard_events import GuardEvent
-                event = GuardEvent(
-                    guard="daily_loss",
-                    reason=f"Daily loss {daily_pnl:.2f}% exceeded threshold {Settings.MAX_DAILY_LOSS_PCT}%",
-                    extra_data={"daily_pnl_pct": daily_pnl, "threshold": Settings.MAX_DAILY_LOSS_PCT},
-                    severity="CRITICAL"
-                )
-                self.trade_store.guard_events.record_guard_event(event)
+                try:
+                    from src.utils.guard_events import GuardEvent
+                    event = GuardEvent(
+                        guard="daily_loss",
+                        reason=f"Daily loss {daily_pnl:.2f}% exceeded threshold {Settings.MAX_DAILY_LOSS_PCT}%",
+                        extra_data={"daily_pnl_pct": daily_pnl, "threshold": Settings.MAX_DAILY_LOSS_PCT},
+                        severity="CRITICAL"
+                    )
+                    self.trade_store.guard_events.record_guard_event(event)
+                except (ImportError, AttributeError) as e:
+                    self.logger.error(f"Failed to record guard event: {e}")
             return False
+
         consec = self.trade_store.consecutive_losses()
         if consec >= Settings.MAX_CONSECUTIVE_LOSSES:
             self.logger.warning(f"Consecutive loss limit {consec}")
-            with contextlib.suppress(Exception):
+            try:
                 halt_flag.write_text("consecutive losses halt")
+            except (OSError, IOError) as e:
+                self.logger.error(f"Failed to write halt flag: {e}")
+
             self.guard_counters['consec_losses'] += 1
             # CR-0069: Record consecutive loss guard event
             if hasattr(self, 'trade_store') and hasattr(self.trade_store, 'guard_events'):
-                from src.utils.guard_events import GuardEvent
-                event = GuardEvent(
-                    guard="consecutive_losses",
-                    reason=f"Consecutive losses {consec} exceeded limit {Settings.MAX_CONSECUTIVE_LOSSES}",
-                    extra_data={"consecutive_losses": consec, "limit": Settings.MAX_CONSECUTIVE_LOSSES},
-                    severity="WARNING"
-                )
-                self.trade_store.guard_events.record_guard_event(event)
+                try:
+                    from src.utils.guard_events import GuardEvent
+                    event = GuardEvent(
+                        guard="consecutive_losses",
+                        reason=f"Consecutive losses {consec} exceeded limit {Settings.MAX_CONSECUTIVE_LOSSES}",
+                        extra_data={"consecutive_losses": consec, "limit": Settings.MAX_CONSECUTIVE_LOSSES},
+                        severity="WARNING"
+                    )
+                    self.trade_store.guard_events.record_guard_event(event)
+                except (ImportError, AttributeError) as e:
+                    self.logger.error(f"Failed to record guard event: {e}")
             return False
+    except (AttributeError, ValueError, TypeError) as e:
+        self.logger.error(f"Error checking daily risk limits: {e}")
+        return True  # Safe default: allow trading if check fails
+
     return True
 
 
-def check_outlier_bar(self, signal: Dict[str, Any], price: float) -> bool:
+def check_outlier_bar(self: 'Trader', signal: Dict[str, Any], price: float) -> bool:
     prev_price = float(signal.get('prev_close', price))
     if prev_price > 0:
         move_pct = abs((price - prev_price) / prev_price) * 100.0
@@ -120,7 +146,7 @@ def check_outlier_bar(self, signal: Dict[str, Any], price: float) -> bool:
     return True
 
 
-def check_volume_capacity(self, signal: Dict[str, Any]) -> bool:
+def check_volume_capacity(self: 'Trader', signal: Dict[str, Any]) -> bool:
     vol = float(signal.get('volume_24h', 0))
     if not self.risk_manager.check_volume(vol):
         self.guard_counters['low_volume'] += 1
@@ -133,7 +159,7 @@ def check_volume_capacity(self, signal: Dict[str, Any]) -> bool:
     return True
 
 
-def correlation_ok(self, symbol: str, price: float) -> bool:
+def correlation_ok(self: 'Trader', symbol: str, price: float) -> bool:
     # cache update (suppress if errors)
     with contextlib.suppress(Exception):
         self.corr_cache.update(symbol, price)
@@ -162,39 +188,40 @@ def correlation_ok(self, symbol: str, price: float) -> bool:
     return True
 
 
-# CR-0048 internal state names
+# CR-0048 thread-safe correlation state management
+_CORR_STATE_LOCK = threading.RLock()
 _CORR_STATE = {
     'last_adjust_ts': 0.0,
     'block_streak': 0
 }
 
-from src.utils.structured_log import slog  # local import to avoid cycles
-import time
-
-
-def _maybe_adjust_correlation_threshold(self, blocked: bool):  # CR-0048
+def _maybe_adjust_correlation_threshold(self: 'Trader', blocked: bool):  # CR-0048
+    """Thread-safe correlation threshold adjustment"""
     try:
-        if blocked:
-            _CORR_STATE['block_streak'] += 1
-        else:
-            _CORR_STATE['block_streak'] = 0
-        cur = Settings.CORRELATION_THRESHOLD
-        if blocked and _CORR_STATE['block_streak'] >= 3:
-            new_thr = max(Settings.CORRELATION_MIN_THRESHOLD, cur - Settings.CORRELATION_ADJ_STEP)
-            if new_thr != cur:
-                Settings.CORRELATION_THRESHOLD = new_thr
-                slog('correlation_adjust', action='ease', value=new_thr)
+        with _CORR_STATE_LOCK:
+            if blocked:
+                _CORR_STATE['block_streak'] += 1
+            else:
                 _CORR_STATE['block_streak'] = 0
-        elif (not blocked) and cur < Settings.CORRELATION_MAX_THRESHOLD:
-            new_thr = min(Settings.CORRELATION_MAX_THRESHOLD, cur + Settings.CORRELATION_ADJ_STEP)
-            if new_thr != cur:
-                Settings.CORRELATION_THRESHOLD = new_thr
-                slog('correlation_adjust', action='tighten', value=new_thr)
-    except Exception:
-        pass
+            cur = Settings.CORRELATION_THRESHOLD
+            if blocked and _CORR_STATE['block_streak'] >= 3:
+                new_thr = max(Settings.CORRELATION_MIN_THRESHOLD, cur - Settings.CORRELATION_ADJ_STEP)
+                if new_thr != cur:
+                    Settings.CORRELATION_THRESHOLD = new_thr
+                    slog('correlation_adjust', action='ease', value=new_thr)
+                    _CORR_STATE['block_streak'] = 0
+            elif (not blocked) and cur < Settings.CORRELATION_MAX_THRESHOLD:
+                new_thr = min(Settings.CORRELATION_MAX_THRESHOLD, cur + Settings.CORRELATION_ADJ_STEP)
+                if new_thr != cur:
+                    Settings.CORRELATION_THRESHOLD = new_thr
+                    slog('correlation_adjust', action='tighten', value=new_thr)
+    except Exception as e:
+        # Specific exception handling instead of suppress
+        self.logger.error(f"Correlation threshold adjustment failed: {e}")
+        # Don't let correlation adjustment failure block trading
 
 
-def pre_trade_pipeline(self, signal: Dict[str, Any]):
+def pre_trade_pipeline(self: 'Trader', signal: Dict[str, Any]):
     symbol = signal.get('symbol')
     if not symbol:
         try:

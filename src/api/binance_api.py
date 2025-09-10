@@ -1,35 +1,155 @@
+import hashlib
+import hmac
 import math
+import random
+import time
+
 import pandas as pd
 import requests
 from binance import Client
 from binance.exceptions import BinanceAPIException
-from config.settings import Settings, RuntimeConfig
-import time
-import random
+from config.settings import RuntimeConfig, Settings
+
 from src.utils.logger import get_logger
 from src.utils.prometheus_export import get_exporter_instance
+
+
 class BinanceAPI:
     def __init__(self, mode: str | None = None):
         self.mode = (mode or RuntimeConfig.get_market_mode()).lower()
         self.logger = get_logger("BinanceAPI")
         # In-memory filters cache: { symbol: { 'filters': {type: obj}, 'ts': epoch_sec } }
         self._filters_cache = {}
-        self._filters_cache_ttl_sec = 300.0  # simple TTL to avoid frequent exchange-info calls
-        # Offline / test fallback: if OFFLINE_MODE skip real client heavy init (still create dummy for attribute safety)
+        self._filters_cache_ttl_sec = 300  # 5 min
+        # Initialize client
+        # Offline / test fallback: if OFFLINE_MODE skip real client heavy init (still create realistic simulator for testing)
         if Settings.OFFLINE_MODE:
-            class _Dummy:
+            class _RealisticSimulator:
+                """Realistic simulator for offline testing with actual market-like behavior."""
+
+                def __init__(self):
+                    # Base prices for major crypto pairs (in USDT)
+                    self.base_prices = {
+                        'BTCUSDT': 43500.0,
+                        'ETHUSDT': 2650.0,
+                        'BNBUSDT': 315.0,
+                        'ADAUSDT': 0.52,
+                        'XRPUSDT': 0.61,
+                        'SOLUSDT': 98.0,
+                        'DOTUSDT': 7.2,
+                        'MATICUSDT': 0.85,
+                        'AVAXUSDT': 38.5,
+                        'LINKUSDT': 15.8
+                    }
+                    self.price_volatility = {}  # Track price movements
+
                 def __getattr__(self, item):
                     def _f(*a, **k):
                         return [] if 'ticker' in item.lower() else {}
                     return _f
-                # Explicit helpers used elsewhere
+
                 def get_server_time(self):
                     return {"serverTime": int(time.time()*1000)}
+
+                def get_ticker(self, symbol=None):
+                    """Realistic ticker with bid/ask spread simulation."""
+                    if symbol and symbol in self.base_prices:
+                        base_price = self.base_prices[symbol]
+                        # Simulate realistic price movement (±0.5%)
+                        current_price = base_price * (1 + random.uniform(-0.005, 0.005))
+                        spread_bps = random.uniform(1.0, 5.0)  # 1-5 BPS spread
+                        spread_abs = current_price * (spread_bps / 10000)
+
+                        return {
+                            'symbol': symbol,
+                            'price': f"{current_price:.8f}",
+                            'bidPrice': f"{current_price - spread_abs/2:.8f}",
+                            'askPrice': f"{current_price + spread_abs/2:.8f}",
+                            'volume': f"{random.uniform(10000, 100000):.2f}",
+                            'count': random.randint(1000, 10000)
+                        }
+                    return {}
+
+                def get_order_book(self, symbol, limit=10):
+                    """Realistic order book simulation."""
+                    if symbol in self.base_prices:
+                        base_price = self.base_prices[symbol]
+                        current_price = base_price * (1 + random.uniform(-0.005, 0.005))
+
+                        bids = []
+                        asks = []
+
+                        # Generate realistic bid/ask levels
+                        for i in range(limit):
+                            bid_price = current_price * (1 - (i + 1) * 0.0001)
+                            ask_price = current_price * (1 + (i + 1) * 0.0001)
+                            bid_qty = random.uniform(0.1, 10.0)
+                            ask_qty = random.uniform(0.1, 10.0)
+
+                            bids.append([f"{bid_price:.8f}", f"{bid_qty:.8f}"])
+                            asks.append([f"{ask_price:.8f}", f"{ask_qty:.8f}"])
+
+                        return {'bids': bids, 'asks': asks}
+                    return {'bids': [], 'asks': []}
+
                 def get_klines(self, symbol, interval, limit=500):
-                    # delegate to BinanceAPI offline generator through outer class later if needed
+                    """Generate realistic OHLCV data for backtesting."""
+                    if symbol in self.base_prices:
+                        base_price = self.base_prices[symbol]
+                        klines = []
+                        current_time = int(time.time() * 1000)
+
+                        # Interval to milliseconds mapping
+                        interval_ms = {'1m': 60000, '5m': 300000, '15m': 900000, '1h': 3600000, '4h': 14400000, '1d': 86400000}.get(interval, 60000)
+
+                        for i in range(limit):
+                            # Simulate realistic OHLCV with proper relationships
+                            price_variance = random.uniform(-0.02, 0.02)
+                            open_price = base_price * (1 + price_variance)
+
+                            high_variance = random.uniform(0, 0.01)
+                            low_variance = random.uniform(-0.01, 0)
+                            close_variance = random.uniform(-0.01, 0.01)
+
+                            high_price = open_price * (1 + high_variance)
+                            low_price = open_price * (1 + low_variance)
+                            close_price = open_price * (1 + close_variance)
+
+                            volume = random.uniform(100, 1000)
+
+                            kline_time = current_time - (i * interval_ms)  # Dynamic intervals
+                            klines.append([
+                                kline_time,
+                                f"{open_price:.8f}",
+                                f"{high_price:.8f}",
+                                f"{low_price:.8f}",
+                                f"{close_price:.8f}",
+                                f"{volume:.8f}",
+                                kline_time + interval_ms - 1,
+                                f"{volume * close_price:.8f}",
+                                random.randint(10, 100),
+                                f"{volume * 0.6:.8f}",
+                                f"{volume * close_price * 0.6:.8f}",
+                                "0"
+                            ])
+
+                        return list(reversed(klines))  # Chronological order
                     return []
-            self.client = _Dummy()
-            self.logger.info("OFFLINE_MODE aktif: dummy Binance client kullaniliyor")
+
+                def get_symbol_info(self, symbol):
+                    """Realistic symbol info for filters."""
+                    return {
+                        'symbol': symbol,
+                        'status': 'TRADING',
+                        'filters': [
+                            {'filterType': 'LOT_SIZE', 'minQty': '0.00001', 'stepSize': '0.00001'},
+                            {'filterType': 'PRICE_FILTER', 'minPrice': '0.00001', 'tickSize': '0.01'},
+                            {'filterType': 'MIN_NOTIONAL', 'minNotional': '10.0'}
+                        ]
+                    }
+
+            self.client = _RealisticSimulator()
+            self.logger.info("OFFLINE_MODE aktif: realistic simulator kullaniliyor")
         else:
             # Operasyonel guvenlik: Prod yalnizca ALLOW_PROD=true ise acilir
             if not Settings.USE_TESTNET and not Settings.ALLOW_PROD:
@@ -39,11 +159,77 @@ class BinanceAPI:
                 api_secret=Settings.BINANCE_API_SECRET,
                 testnet=Settings.USE_TESTNET
             )
+            # Manual testnet URL fix for python-binance library
+            if Settings.USE_TESTNET:
+                self.client.API_URL = 'https://testnet.binance.vision/api'
+                self.client.FUTURES_URL = 'https://testnet.binancefuture.com/fapi'
+                self.logger.info(f"TESTNET URLs manually set: API={self.client.API_URL}, FUTURES={self.client.FUTURES_URL}")
+
         # Metrics exporter (safe if not available)
         try:
             self.metrics = get_exporter_instance()
         except Exception:
             self.metrics = None
+
+        # Monkey patch python-binance client to use V2 endpoints
+        self._patch_client_for_v2_endpoints()
+
+    def _signed_request_v2(self, http_method: str, url_path: str, payload: dict = None):
+        """Manual signed request for V2/V3 endpoints that python-binance doesn't support"""
+        if Settings.OFFLINE_MODE:
+            return {}
+        if payload is None:
+            payload = {}
+
+        # Base URL for futures
+        if Settings.USE_TESTNET:
+            base_url = "https://testnet.binancefuture.com"
+        else:
+            base_url = "https://fapi.binance.com"
+
+        # Create query string
+        query_string = "&".join([f"{k}={v}" for k, v in payload.items()])
+        timestamp = int(time.time() * 1000)
+        query_string = f"{query_string}&timestamp={timestamp}" if query_string else f"timestamp={timestamp}"
+
+        # Sign the request
+        signature = hmac.new(
+            Settings.BINANCE_API_SECRET.encode("utf-8"),
+            query_string.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+
+        # Build URL and headers
+        url = f"{base_url}{url_path}?{query_string}&signature={signature}"
+        headers = {"X-MBX-APIKEY": Settings.BINANCE_API_KEY}
+
+        try:
+            response = requests.request(http_method, url, headers=headers, timeout=10)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            self.logger.error(f"V2 request error {url_path}: {e}")
+            return {}
+
+    def _patch_client_for_v2_endpoints(self):
+        """Monkey patch python-binance client to use V2 endpoints for futures"""
+        if not hasattr(self.client, '_original_futures_position_information'):
+            # Store original method
+            self.client._original_futures_position_information = self.client.futures_position_information
+
+            # Replace with V2 wrapper
+            def futures_position_information_v2(**kwargs):
+                """V2 wrapper for futures position information"""
+                try:
+                    return self._signed_request_v2("GET", "/fapi/v2/positionRisk", kwargs)
+                except Exception as e:
+                    self.logger.warning(f"V2 endpoint failed, falling back to V1: {e}")
+                    # Fallback to original method if V2 fails
+                    return self.client._original_futures_position_information(**kwargs)
+
+            # Apply the monkey patch
+            self.client.futures_position_information = futures_position_information_v2
+            self.logger.info("Applied V2 endpoint monkey patch for futures_position_information")
 
     # ---------- Helpers for filters ----------
     def _spot_symbol_info(self, symbol: str):
@@ -146,6 +332,17 @@ class BinanceAPI:
             self.logger.error(f"get_ticker_24hr hata: {e}")
             return []
 
+    def get_ticker(self, symbol: str):
+        """Get ticker information for a single symbol including bid/ask prices"""
+        try:
+            if Settings.OFFLINE_MODE:
+                # Use realistic simulator with symbol parameter
+                return self.client.get_ticker(symbol=symbol)
+            return self.client.get_ticker(symbol=symbol)
+        except Exception as e:
+            self.logger.error(f"get_ticker({symbol}) hata: {e}")
+            return None
+
     def get_top_pairs(self, limit=150):
         try:
             self.logger.info(f"Top {limit} pariteler aliniyor")
@@ -177,7 +374,7 @@ class BinanceAPI:
     def get_historical_klines(self, symbol, interval, limit=500):
         if Settings.OFFLINE_MODE:
             # Generate synthetic OHLCV walk for deterministic offline tests
-            import time, random
+            import time
             now_ms = int(time.time() * 1000)
             # Map common intervals to milliseconds, default 1h
             interval_map = {
@@ -219,8 +416,21 @@ class BinanceAPI:
         if self.mode == "futures":
             # Use spot klines for simplicity; could switch to futures klines if needed
             return self.client.get_klines(symbol=symbol, interval=interval, limit=limit)
-        else:
-            return self.client.get_klines(symbol=symbol, interval=interval, limit=limit)
+        return self.client.get_klines(symbol=symbol, interval=interval, limit=limit)
+
+    def get_klines(self, symbol, interval="1h", limit=500):
+        """Get klines data - wrapper around get_historical_klines for compatibility"""
+        return self.get_historical_klines(symbol, interval, limit)
+
+    def get_order_book(self, symbol: str, limit: int = 10):
+        """Get order book depth"""
+        try:
+            if self.mode == "futures":
+                return self.client.futures_order_book(symbol=symbol, limit=limit)
+            return self.client.get_order_book(symbol=symbol, limit=limit)
+        except Exception as e:
+            self.logger.error(f"Order book fetch failed for {symbol}: {e}")
+            return {'bids': [], 'asks': []}
 
     def get_historical_data(self, symbol, interval="1h", days=30):
         klines = self.get_historical_klines(symbol, interval, limit=days*24)
@@ -273,25 +483,23 @@ class BinanceAPI:
                             symbol=symbol, side=side, type=order_type, quantity=qty, price=px,
                             timeInForce=kwargs.get('timeInForce', 'GTC')
                         )
+                elif order_type == "MARKET":
+                    resp = self.client.create_order(symbol=symbol, side=side, type="MARKET", quantity=qty)
                 else:
-                    if order_type == "MARKET":
-                        resp = self.client.create_order(symbol=symbol, side=side, type="MARKET", quantity=qty)
-                    else:
-                        resp = self.client.create_order(symbol=symbol, side=side, type=order_type, quantity=qty, price=px)
+                    resp = self.client.create_order(symbol=symbol, side=side, type=order_type, quantity=qty, price=px)
                 # Simulate partial fill probability for robustness testing (only in testnet or if enabled)
                 if Settings.USE_TESTNET and order_type == "MARKET":
                     if not isinstance(resp, dict):
                         self.logger.warning("Order response is not a dict; partial fill simulation skipped")
+                    elif random.random() < 0.15:  # 15% partial fill
+                        filled_qty = qty * random.uniform(0.3, 0.8)
+                        resp['executedQty'] = str(filled_qty)
+                        resp['origQty'] = str(qty)
+                        resp['partialFill'] = True
                     else:
-                        if random.random() < 0.15:  # 15% partial fill
-                            filled_qty = qty * random.uniform(0.3, 0.8)
-                            resp['executedQty'] = str(filled_qty)
-                            resp['origQty'] = str(qty)
-                            resp['partialFill'] = True
-                        else:
-                            resp['executedQty'] = str(qty)
-                            resp['origQty'] = str(qty)
-                            resp['partialFill'] = False
+                        resp['executedQty'] = str(qty)
+                        resp['origQty'] = str(qty)
+                        resp['partialFill'] = False
                 return resp
             except BinanceAPIException as e:
                 last_err = e
@@ -472,9 +680,8 @@ class BinanceAPI:
                 }
                 self.logger.info(f"Futures protection placed: {symbol} SL:{result['sl_id']} TP:{result['tp_id']}")
                 return result
-            else:
-                self.logger.error(f"Futures protection failed: SL={bool(sl_resp)}, TP={bool(tp_resp)}")
-                return None
+            self.logger.error(f"Futures protection failed: SL={bool(sl_resp)}, TP={bool(tp_resp)}")
+            return None
 
         except Exception as e:
             self.logger.error(f"Futures protection error {symbol}: {e}")
@@ -485,31 +692,47 @@ class BinanceAPI:
             return []
         if self.mode == "futures":
             if symbol:
-                return [o for o in self.client.futures_get_open_orders(symbol=symbol)]
+                return list(self.client.futures_get_open_orders(symbol=symbol))
             return self.client.futures_get_open_orders()
-        else:
-            return self.client.get_open_orders(symbol=symbol)
+        return self.client.get_open_orders(symbol=symbol)
 
     def get_account_info(self):
-        return self.client.get_account()
+        if self.mode == "futures":
+            # Use V2 account endpoint for futures
+            try:
+                return self._signed_request_v2("GET", "/fapi/v2/account")
+            except Exception as e:
+                self.logger.error(f"futures account V2 endpoint error: {e}")
+                return {}
+        else:
+            # Use spot account endpoint
+            return self.client.get_account()
+
+    def get_account(self):
+        """Alias for get_account_info for trader compatibility"""
+        return self.get_account_info()
 
     def get_asset_balance(self, asset):
         if Settings.OFFLINE_MODE:
             return 1000.0
         if self.mode == "futures":
-            # Approximate via futures account balance
-            balances = self.client.futures_account_balance()
-            for b in balances:
-                if b.get('asset') == asset:
-                    return float(b.get('balance', 0))
-            return 0.0
+            try:
+                # Use V2 account endpoint
+                account = self._signed_request_v2("GET", "/fapi/v2/account")
+                assets = account.get('assets', [])
+                for a in assets:
+                    if a.get('asset') == asset:
+                        return float(a.get('availableBalance', 0))
+                return 0.0
+            except Exception as e:
+                self.logger.error(f"get_asset_balance error: {e}")
+                return 0.0
         else:
             bal = self.client.get_asset_balance(asset=asset)
             if isinstance(bal, dict):
                 return float(bal['free']) if bal else 0.0
-            else:
-                self.logger.error("bal is not a dictionary")
-                return 0.0
+            self.logger.error("bal is not a dictionary")
+            return 0.0
 
     def get_positions(self):
         """Return current position info list (simplified) for reconciliation."""
@@ -517,7 +740,8 @@ class BinanceAPI:
             return []
         try:
             if self.mode == 'futures':
-                raw = self.client.futures_position_information()
+                # Use V2 endpoint for futures positions
+                raw = self._signed_request_v2("GET", "/fapi/v2/positionRisk")
                 positions = []
                 for p in raw:
                     amt = float(p.get('positionAmt') or 0.0)
@@ -533,10 +757,9 @@ class BinanceAPI:
                         'entry_price': entry_price
                     })
                 return positions
-            else:
-                # Spot'ta tam envanter scan gerekli; basit placeholder (daha sonra genişletilebilir)
-                return []
-        except Exception:
+            return []
+        except Exception as e:
+            self.logger.error(f"get_positions error: {e}")
             return []
 
     def fetch_market_data(self, endpoint):

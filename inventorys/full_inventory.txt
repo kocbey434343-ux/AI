@@ -1,0 +1,193 @@
+FULL CODE INVENTORY
+
+File: scripts/apply_migrations.py
+Purpose: Basit migration uygulayici.
+Stats: lines=51 functions=3 classes=0 flag=-
+Top Functions: load_applied, save_applied, main
+---
+File: scripts/backup_snapshot.py
+Purpose: Saatlik (manuel tetiklenebilir) kod snapshot scripti.
+Stats: lines=84 functions=6 classes=0 flag=-
+Top Functions: run, git_dirty, collect_files, snapshot, prune, main
+---
+File: scripts/create_tag.py
+Purpose: Lightweight tag creation script.
+Stats: lines=82 functions=4 classes=0 flag=-
+Top Functions: read_ssot_revision, get_existing_tags, bump, main
+---
+File: scripts/generate_inventory.py
+Purpose: NO_DOCSTRING
+Stats: lines=85 functions=0 classes=0 flag=-
+---
+File: scripts/secret_scan.py
+Purpose: Simple secret pattern scanner for staged files.
+Stats: lines=83 functions=4 classes=0 flag=-
+Top Functions: scan_text, scan_paths, get_staged_files, main
+---
+File: scripts/smoke_tests.py
+Purpose: Hizli smoke test calistirici.
+Stats: lines=37 functions=1 classes=0 flag=-
+Top Functions: main
+---
+File: src/__init__.py
+Purpose: NO_DOCSTRING
+Stats: lines=1 functions=0 classes=0 flag=-
+---
+File: src/api/__init__.py
+Purpose: NO_DOCSTRING
+Stats: lines=1 functions=0 classes=0 flag=-
+---
+File: src/api/binance_api.py
+Purpose: NO_DOCSTRING
+Stats: lines=396 functions=0 classes=1 flag=-
+Top Classes: BinanceAPI
+---
+File: src/api/health_check.py
+Purpose: NO_DOCSTRING
+Stats: lines=78 functions=0 classes=1 flag=-
+Top Classes: HealthChecker
+---
+File: src/api/price_stream.py
+Purpose: NO_DOCSTRING
+Stats: lines=177 functions=0 classes=1 flag=-
+Top Classes: PriceStreamManager
+---
+File: src/backtest/calibrate.py
+Purpose: NO_DOCSTRING
+Stats: lines=562 functions=8 classes=0 flag=BIG_MODULE
+Top Functions: _slice_recent, _build_indicator_frames, _iter_scores, _simulate_trades, _simulate_for_symbol, _optimize_thresholds, run_calibration, run_threshold_evaluation
+---
+File: src/backtest/calibrate_new.py
+Purpose: Thin re-export for run_calibration (legacy compatibility).
+Stats: lines=7 functions=0 classes=0 flag=-
+---
+File: src/backtest/orchestrator.py
+Purpose: NO_DOCSTRING
+Stats: lines=52 functions=0 classes=2 flag=-
+Top Classes: BacktestResult, BacktestOrchestrator
+---
+File: src/data_fetcher.py
+Purpose: NO_DOCSTRING
+Stats: lines=325 functions=0 classes=1 flag=-
+Top Classes: DataFetcher
+---
+File: src/indicators.py
+Purpose: NO_DOCSTRING
+Stats: lines=319 functions=0 classes=1 flag=-
+Top Classes: IndicatorCalculator
+---
+File: src/main.py
+Purpose: NO_DOCSTRING
+Stats: lines=90 functions=3 classes=0 flag=-
+Top Functions: ensure_data, validate_environment, main
+---
+File: src/risk_manager.py
+Purpose: NO_DOCSTRING
+Stats: lines=115 functions=0 classes=1 flag=-
+Top Classes: RiskManager
+---
+File: src/signal_generator.py
+Purpose: NO_DOCSTRING
+Stats: lines=248 functions=0 classes=1 flag=-
+Top Classes: SignalGenerator
+---
+File: src/trader.py
+Purpose: Compatibility shim.
+Stats: lines=8 functions=0 classes=0 flag=-
+---
+File: src/trader/__init__.py
+Purpose: Trader package orchestrating execution, guards, trailing and metrics.
+Stats: lines=6 functions=0 classes=0 flag=-
+---
+File: src/trader/core.py
+Purpose: Core Trader.
+Stats: lines=359 functions=0 classes=2 flag=-
+Top Classes: OrderRequest, Trader
+---
+File: src/trader/execution.py
+Purpose: Emir hazirlama, pozisyon acma-kaydetme ve kapama islemleri.
+Stats: lines=364 functions=15 classes=2 flag=-
+Top Functions: compute_atr, initial_levels, position_size, prepare_order_context, place_main_and_protection, place_protection_orders, _extract_order_ids, _extract_single_id, extract_fills, record_open
+Top Classes: OrderContext, SizeInputs
+---
+File: src/trader/guards.py
+Purpose: Guard ve risk kontrolleri.
+Stats: lines=118 functions=7 classes=0 flag=-
+Top Functions: map_signal, check_halt_flag, check_daily_risk_limits, check_outlier_bar, check_volume_capacity, correlation_ok, pre_trade_pipeline
+---
+File: src/trader/metrics.py
+Purpose: Metrik toplama, flush ve anomaly tespiti.
+Stats: lines=145 functions=10 classes=0 flag=-
+Top Functions: init_metrics, metrics_snapshot, maybe_flush_metrics, recent_latency_slippage_stats, _apply_risk_reduction, _maybe_restore_risk, _check_latency_anomaly, _check_slip_anomaly, maybe_check_anomalies, maybe_trim_metrics
+---
+File: src/trader/trailing.py
+Purpose: Trailing ve kismi cikis mantigi.
+Stats: lines=99 functions=4 classes=0 flag=-
+Top Functions: init_trailing, compute_r_multiple, maybe_partial_exits, maybe_trailing
+---
+File: src/ui/__init__.py
+Purpose: NO_DOCSTRING
+Stats: lines=1 functions=0 classes=0 flag=-
+---
+File: src/ui/main_window.py
+Purpose: Minimal MainWindow (gecici stub) - CR-0022 sonrasi temiz baz.
+Stats: lines=222 functions=0 classes=2 flag=-
+Top Classes: _TraderMetricsStub, MainWindow
+---
+File: src/ui/signal_window.py
+Purpose: NO_DOCSTRING
+Stats: lines=342 functions=0 classes=1 flag=-
+Top Classes: SignalWindow
+---
+File: src/ui/unreal_label.py
+Purpose: Pure helper for formatting unrealized total PnL label (CR-0021).
+Stats: lines=31 functions=1 classes=0 flag=-
+Top Functions: format_total_unreal_label
+---
+File: src/utils/__init__.py
+Purpose: NO_DOCSTRING
+Stats: lines=1 functions=0 classes=0 flag=-
+---
+File: src/utils/correlation_cache.py
+Purpose: NO_DOCSTRING
+Stats: lines=54 functions=0 classes=1 flag=-
+Top Classes: CorrelationCache
+---
+File: src/utils/feature_flags.py
+Purpose: Basit feature flag altyapisi.
+Stats: lines=25 functions=2 classes=0 flag=-
+Top Functions: _load_flags, flag_enabled
+---
+File: src/utils/helpers.py
+Purpose: NO_DOCSTRING
+Stats: lines=60 functions=7 classes=0 flag=-
+Top Functions: save_json, load_json, save_csv, format_timestamp, calculate_pnl, calculate_win_rate, calculate_sharpe_ratio
+---
+File: src/utils/logger.py
+Purpose: NO_DOCSTRING
+Stats: lines=83 functions=1 classes=1 flag=-
+Top Functions: get_logger
+Top Classes: Logger
+---
+File: src/utils/order_state.py
+Purpose: NO_DOCSTRING
+Stats: lines=31 functions=1 classes=1 flag=-
+Top Functions: transition
+Top Classes: OrderState
+---
+File: src/utils/structured_log.py
+Purpose: NO_DOCSTRING
+Stats: lines=43 functions=3 classes=0 flag=-
+Top Functions: slog, get_slog_events, clear_slog_events
+---
+File: src/utils/trade_store.py
+Purpose: NO_DOCSTRING
+Stats: lines=391 functions=1 classes=1 flag=-
+Top Functions: json_dumps
+Top Classes: TradeStore
+---
+File: src/utils/ws_utils.py
+Purpose: NO_DOCSTRING
+Stats: lines=34 functions=1 classes=0 flag=-
+Top Functions: should_restart_ws
+---

@@ -1,30 +1,42 @@
 from __future__ import annotations
-from typing import Optional, Literal
-import math
+
+from typing import Literal, Optional
+
+from config.settings import RuntimeConfig, Settings
+
 from src.utils.logger import get_logger
-from config.settings import Settings, RuntimeConfig
 
 Side = Literal["long", "short"]
 
 class RiskManager:
-    """Pozisyon boyutu, stop ve hedef hesapları için risk yönetimi.
+    """Pozisyon boyutu, stop ve hedef hesaplari icin risk yonetimi.
 
-    Varsayılan yaklaşım:
+    Varsayilan yaklasim:
       - Risk: hesap bakiyesinin risk_percent%'i.
-      - Stop mesafesi: ATR tabanlı (atr_multiplier * ATR) veya fallback sabit %.
-      - Pozisyon değeri = risk_amount / (stop_distance_pct)
-      - Kaldıraç yalnızca futures modunda efektif pozisyon değerini büyütür; marjin = pozisyon_değeri / leverage.
+      - Stop mesafesi: ATR tabanli (atr_multiplier * ATR) veya fallback sabit %.
+      - Pozisyon degeri = risk_amount / (stop_distance_pct)
+      - Kaldirac yalnizca futures modunda efektif pozisyon degerini buyutur; marjin = pozisyon_degeri / leverage.
     """
 
     def __init__(self) -> None:
         self.logger = get_logger("RiskManager")
+
+        # Production-safe risk settings - NO aggressive testnet multipliers
+        # Use conservative values for both testnet and production
         self.risk_percent: float = Settings.DEFAULT_RISK_PERCENT
-        self.leverage: int = Settings.DEFAULT_LEVERAGE
         self.max_positions: int = Settings.DEFAULT_MAX_POSITIONS
-        self.min_volume: float = Settings.DEFAULT_MIN_VOLUME
         self.atr_multiplier: float = 2.0
-        self.fallback_stop_pct: float = 0.6  # %0.6 default (eski %0.3 çok sıkıydı)
+        self.fallback_stop_pct: float = 0.6  # %0.6 default (eski %0.3 cok sikiydi)
         self.take_profit_rr: float = 2.2  # risk:reward
+
+        # Log environment mode for transparency
+        if Settings.USE_TESTNET:
+            self.logger.info("TESTNET MODE: Using conservative production-safe parameters")
+        else:
+            self.logger.info("PRODUCTION MODE: Using conservative optimal values")
+
+        self.leverage: int = Settings.DEFAULT_LEVERAGE
+        self.min_volume: float = Settings.DEFAULT_MIN_VOLUME
 
     # ---------------- Configuration -----------------
     def update_settings(self, risk_percent: Optional[float] = None, leverage: Optional[int] = None,
@@ -46,7 +58,7 @@ class RiskManager:
         if take_profit_rr is not None and take_profit_rr > 0:
             self.take_profit_rr = take_profit_rr
         self.logger.info(
-            f"Risk ayarları -> risk%={self.risk_percent} lev={self.leverage}x max_pos={self.max_positions} min_vol={self.min_volume}"
+            f"Risk ayarlari -> risk%={self.risk_percent} lev={self.leverage}x max_pos={self.max_positions} min_vol={self.min_volume}"
             f" atr_mult={self.atr_multiplier} fb_stop%={self.fallback_stop_pct} rr={self.take_profit_rr}"
         )
 
@@ -61,23 +73,36 @@ class RiskManager:
         return entry_price - dist if side == "long" else entry_price + dist
 
     def calculate_position_size(self, account_balance: float, entry_price: float, stop_loss_price: float) -> float:
-        """Risk tabanlı pozisyon boyu.
+        """Risk tabanli pozisyon boyu.
 
         position_value = risk_amount / stop_distance_pct
         Futures: margin_required = position_value / leverage; spot'ta leverage=1 kabul edilir.
         position_size = position_value / entry_price
         """
-        if entry_price <= 0 or stop_loss_price <= 0:
+        # Enhanced input validation
+        if entry_price <= 0 or stop_loss_price <= 0 or account_balance <= 0:
             return 0.0
+
         stop_distance_pct = abs(entry_price - stop_loss_price) / entry_price
-        if stop_distance_pct <= 0:
+
+        # Enhanced zero/near-zero protection with epsilon tolerance
+        EPSILON = 1e-8
+        if stop_distance_pct <= EPSILON:
+            self.logger.warning(f"Stop distance too small: {stop_distance_pct:.10f}, rejecting order")
             return 0.0
+
         risk_amount = account_balance * (self.risk_percent / 100.0)
+
+        # Additional safety: minimum risk amount check
+        if risk_amount <= EPSILON:
+            self.logger.warning(f"Risk amount too small: {risk_amount:.10f}")
+            return 0.0
+
         position_value = risk_amount / stop_distance_pct
         if RuntimeConfig.get_market_mode() == "futures" and self.leverage > 1:
             # Pozisyon değeri (notional), marjin = position_value / leverage -> risk'e uygun
             margin_required = position_value / self.leverage
-            if margin_required > account_balance * 0.9:  # aşırı kullanım guard
+            if margin_required > account_balance * 0.9:  # ashiri kullanim guard
                 scale = (account_balance * 0.9) / margin_required
                 position_value *= scale
         position_size = position_value / entry_price
@@ -99,7 +124,7 @@ class RiskManager:
         return abs(entry_price - stop_loss_price) * position_size
 
     def apply_slippage_protection(self, stop_loss_price: float, side: Side) -> float:
-        # Basit tampon: stop'u %0.1 daha uzaklaştır
+        # Basit tampon: stop'u %0.1 daha uzaklastir
         slippage_percent = 0.1
         return stop_loss_price * (1 - slippage_percent / 100) if side == "long" else stop_loss_price * (1 + slippage_percent / 100)
 

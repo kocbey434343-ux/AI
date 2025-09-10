@@ -3,11 +3,20 @@
 Backtest Results Window - Guzel sonuc gosterim penceresi
 """
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-                             QPushButton, QTextEdit, QTableWidget, QTableWidgetItem,
-                             QTabWidget, QWidget, QGroupBox, QGridLayout)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import (
+    QDialog,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class BacktestResultsWindow(QDialog):

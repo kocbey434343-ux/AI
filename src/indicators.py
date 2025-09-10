@@ -1,11 +1,13 @@
-import pandas as pd
-import numpy as np
-import warnings
 import json
-from ta.momentum import RSIIndicator, StochasticOscillator, WilliamsRIndicator
-from ta.trend import EMAIndicator, MACD, CCIIndicator, ADXIndicator
-from ta.volatility import BollingerBands, AverageTrueRange
+import warnings
+
+import numpy as np
+import pandas as pd
 from config.settings import Settings
+from ta.momentum import RSIIndicator, StochasticOscillator, WilliamsRIndicator
+from ta.trend import MACD, ADXIndicator, CCIIndicator, EMAIndicator
+from ta.volatility import AverageTrueRange, BollingerBands
+
 
 class IndicatorCalculator:
     def __init__(self):
@@ -98,20 +100,20 @@ class IndicatorCalculator:
                             # Sanitize ADX outputs to avoid inf/NaN propagation
                             for k, v in list(adx_dict.items()):
                                 if hasattr(v, 'replace'):
-                                    v = v.replace([np.inf, -np.inf], np.nan).fillna(method='bfill').fillna(method='ffill')
+                                    v = v.replace([np.inf, -np.inf], np.nan).bfill().ffill()
                                     adx_dict[k] = v
                             results[name] = adx_dict
                     except Exception:
-                        # Tekil indikatör hatasını yut ve devam et
+                        # Process individual indicator error and continue
                         continue
         return results
 
     def score_indicators(self, df: pd.DataFrame, indicators: dict):
-        """Geliştirilmiş puanlama (ağırlıklar + ATR penaltesi + osilatör birleştirme)."""
+        """Gelistirilmis puanlama (agirliklar + ATR penaltesi + osilator birlestirme)."""
         price = df['close'].iloc[-1]
         scores = {}
 
-        # Ağırlıklar (kolay ayar için dict)
+        # Weights (easy configuration dict)
         base_weights = {
             'MACD': 1.3,
             'EMA': 1.1,
@@ -119,21 +121,21 @@ class IndicatorCalculator:
             'Bollinger Bands': 0.9,
             'Oscillator': 0.9,
             'CCI': 0.6,
-            'ADX': 0.0  # ADX doğrudan eklenmez, diğerlerinin ağırlığını modüle eder
+            'ADX': 0.0  # ADX not directly added, modulates weight of others
         }
 
-        # Ham normalizasyon yardımcıları
+        # Raw normalization helpers
         def norm_macd():
             try:
                 hist = indicators['MACD']['histogram'].iloc[-1]
-                # ATR ile ölçekle (çok küçük / büyük histogramı normalize et)
+                # Scale with ATR (normalize very small/large histograms)
                 atr_pct = None
                 if 'ATR' in indicators:
                     atr_val = indicators['ATR'].iloc[-1]
                     atr_pct = (atr_val / max(price, 1e-12))
                 scale = 1.0
                 if atr_pct and atr_pct > 0:
-                    scale = max(0.5, min(3.0, 1.0 / (atr_pct * 10)))  # volatilite artınca histogram etkisi bir miktar zayıflar
+                    scale = max(0.5, min(3.0, 1.0 / (atr_pct * 10)))  # higher volatility weakens histogram effect slightly
                 return float(np.clip(50 + 50 * np.tanh(hist * scale), 0, 100))
             except Exception:
                 return 50.0
@@ -145,10 +147,10 @@ class IndicatorCalculator:
                 band = max(upper - lower, 1e-12)
                 pos = (price - lower) / band
                 pos = float(np.clip(pos, 0, 1))
-                # Dar bant filtresi (sıkışma) -> etkisini azalt
+                # Narrow band filter (squeeze) -> reduce its effect
                 squeeze = (band / max(price, 1e-12))
-                if squeeze < 0.01:  # %1'den küçük bant genişliği
-                    base = 50 + (pos - 0.5) * 40  # etkisi azalt
+                if squeeze < 0.01:  # band width less than 1%
+                    base = 50 + (pos - 0.5) * 40  # reduce effect
                 else:
                     base = pos * 100
                 return float(np.clip(base, 0, 100))
@@ -165,7 +167,7 @@ class IndicatorCalculator:
             try:
                 ema = indicators['EMA'].iloc[-1]
                 diff = (price - ema) / max(price, 1e-12)
-                # Daha yumuşak ölçek (önceki *10 çok agresifti)
+                # Softer scale (previous *10 was too aggressive)
                 return float(np.clip(50 + 50 * np.tanh(diff * 5), 0, 100))
             except Exception:
                 return 50.0
@@ -173,7 +175,7 @@ class IndicatorCalculator:
         def norm_cci():
             try:
                 cci = indicators['CCI'].iloc[-1]
-                return float(np.clip(50 + (cci / 250) * 50, 0, 100))  # daha geniş bant
+                return float(np.clip(50 + (cci / 250) * 50, 0, 100))  # wider band
             except Exception:
                 return 50.0
         def norm_oscillator():
@@ -212,7 +214,7 @@ class IndicatorCalculator:
             component_scores['RSI'] = norm_rsi()
         if 'Bollinger Bands' in indicators:
             component_scores['Bollinger Bands'] = norm_bbands()
-        # Oscillator birleşik
+        # Combined oscillator
         if 'Stochastic' in indicators or 'Williams %R' in indicators:
             component_scores['Oscillator'] = norm_oscillator()
         if 'CCI' in indicators:
@@ -220,22 +222,22 @@ class IndicatorCalculator:
         if 'ADX' in indicators:
             component_scores['ADX'] = norm_adx()
 
-        # Ağırlıklı ortalama
-        # ADX rejimine göre adaptasyon (trend düşükse trend odaklı ağırlıkları azalt, mean-reversion bileşenlerini artır)
+        # Weighted average
+        # ADX regime-based adaptation (if trend is weak, reduce trend-focused weights, increase mean-reversion components)
         weights = base_weights.copy()
         adx_level = component_scores.get('ADX')
         if adx_level is not None:
-            if adx_level < 20:  # trend zayıf
+            if adx_level < 20:  # weak trend
                 weights['MACD'] *= 0.7
                 weights['EMA'] *= 0.7
                 weights['Bollinger Bands'] *= 1.2
                 weights['Oscillator'] *= 1.1
-            elif adx_level > 35:  # güçlü trend
+            elif adx_level > 35:  # strong trend
                 weights['MACD'] *= 1.2
                 weights['EMA'] *= 1.1
                 weights['Oscillator'] *= 0.9
                 weights['Bollinger Bands'] *= 0.85
-        # Normalleştirilmiş ağırlıklı ortalama
+        # Normalized weighted average
         contributions = {}
         w_sum = 0.0
         w_total = 0.0
@@ -246,13 +248,13 @@ class IndicatorCalculator:
             w_total += w
         core_score = (w_sum / w_total) if w_total else 50.0
 
-        # ATR risk penaltesi (volatilite yüksekse bir miktar kırp)
+        # ATR risk penalty (trim slightly if volatility is high)
         risk_multiplier = 1.0
         if 'ATR' in indicators:
             try:
                 atr_val = indicators['ATR'].iloc[-1]
                 atr_pct = atr_val / max(price, 1e-12)
-                # 0 -> 1.0 (penaltesiz) ; 0.05 ve üzeri -> %30'a kadar kesinti
+                # 0 -> 1.0 (no penalty) ; 0.05 and above -> up to 30% reduction
                 penalty = min(0.30, max(0.0, (atr_pct - 0.01) * (0.30 / 0.04)))  # 1% üstü artan ceza ~5% tepe
                 risk_multiplier = 1.0 - penalty
             except Exception:
@@ -260,8 +262,8 @@ class IndicatorCalculator:
 
         final_score = core_score * risk_multiplier
 
-        # Skorlar dönerken orijinal indikatör isimlerini de kullanıcıya göstermek için
-        # component_scores + ATR risk ayrı döndür.
+        # Skorlar donerken orijinal indikator isimlerini de kullaniciya gostermek icin
+        # component_scores + ATR risk ayri dondur.
         out_scores = {}
         out_scores.update(component_scores)
         if 'ATR' in indicators:
@@ -284,8 +286,8 @@ class IndicatorCalculator:
         Returns:
             str: The trading signal ('AL', 'SAT', or 'BEKLE').
         """
-        # Histerezis için önceki sinyal (state) tutulabilir; basit versiyonda direkt threshold + exit threshold.
-        # Burada sadece ana eşikleri kullanıyoruz; GUI / caller katmanında state eklenebilir.
+        # Histerezis icin onceki sinyal (state) tutulabilir; basit versiyonda direkt threshold + exit threshold.
+        # Burada sadece ana esikleri kullaniyoruz; GUI / caller katmaninda state eklenebilir.
         if score >= Settings.BUY_SIGNAL_THRESHOLD:
             return "AL"
         if score <= Settings.SELL_SIGNAL_THRESHOLD:
@@ -420,7 +422,7 @@ class IndicatorCalculator:
     @staticmethod
     def calculate_moving_average(data, window_size):
         if window_size <= 0:
-            raise ValueError("window_size > 0 olmalı")
+            raise ValueError("window_size > 0 olmali")
         data = list(data)
         if len(data) < window_size:
             return []

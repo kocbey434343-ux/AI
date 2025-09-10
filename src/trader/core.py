@@ -13,6 +13,7 @@ from __future__ import annotations
 import contextlib
 import os  # CR-0045 env aware snapshot
 import threading
+import time
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -30,18 +31,36 @@ from config.settings import RuntimeConfig, Settings
 
 from src.api.binance_api import BinanceAPI
 from src.risk_manager import RiskManager
+from src.utils.advanced_metrics import (  # Performance monitoring
+    get_trading_metrics,
+    profile_performance,
+)
 from src.utils.config_snapshot import create_config_snapshot  # CR-0071
 from src.utils.correlation_cache import CorrelationCache
+from src.utils.cost_calculator import get_cost_calculator
+
+# A32 Edge Hardening imports
+from src.utils.edge_health import get_edge_health_monitor
 from src.utils.exposure_metrics import (  # Global exposure tracking
     calculate_global_exposure,
     format_exposure_summary,
 )
 from src.utils.logger import get_logger
+from src.utils.microstructure import get_microstructure_filter
 from src.utils.order_state import OrderState
 from src.utils.risk_escalation import init_risk_escalation  # CR-0076
 from src.utils.state_manager import StateManager
 from src.utils.structured_log import slog  # CR-0028
 from src.utils.trade_store import TradeStore
+
+# A31 Meta-Router imports
+try:
+    from src.strategy.meta_router import MetaRouter
+    from src.strategy.specialist_interface import GatingScores, calculate_gating_scores
+    META_ROUTER_AVAILABLE = True
+except ImportError:
+    META_ROUTER_AVAILABLE = False
+    MetaRouter = None
 
 from .execution import (
     close_position as _close_position,
@@ -97,6 +116,7 @@ class Trader:
             if os.getenv('PYTEST_CLEAR_HALT_FLAG_ON_START') == '1':
                 with contextlib.suppress(Exception):
                     from pathlib import Path as _P
+
                     from config.settings import Settings as _S  # type: ignore
                     _P(_S.DAILY_HALT_FLAG_PATH).unlink(missing_ok=True)
             else:
@@ -105,6 +125,7 @@ class Trader:
                 if test_db and test_db != ':memory:' and ('pytest-' in test_db.lower() or 'pytest_of' in test_db.lower() or 'pytest-of' in test_db.lower()):
                     with contextlib.suppress(Exception):
                         from pathlib import Path as _P
+
                         from config.settings import Settings as _S  # type: ignore
                         _P(_S.DAILY_HALT_FLAG_PATH).unlink(missing_ok=True)
 
@@ -133,6 +154,9 @@ class Trader:
 
         init_trailing(self)
         init_metrics(self)
+        # Register this trader as the global metrics instance
+        from .metrics import set_metrics_instance
+        set_metrics_instance(self)
         # Risk escalation system (CR-0076)
         init_risk_escalation(self)
         # FSM feature flag (CR-0063)
@@ -142,8 +166,54 @@ class Trader:
         # Daily risk reset date
         self._risk_reset_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
 
+        # A31 Meta-Router initialization
+        self.meta_router = None
+        if META_ROUTER_AVAILABLE and getattr(Settings, 'META_ROUTER_ENABLED', False):
+            try:
+                self.meta_router = MetaRouter()
+                self._init_meta_router_specialists()
+                self.logger.info("Meta-Router sistemi baslatildi")
+            except Exception as e:
+                self.logger.error(f"Meta-Router baslatma hatasi: {e}")
+                self.meta_router = None
+
+    def _init_meta_router_specialists(self) -> None:
+        """Initialize Meta-Router specialist strategies"""
+        if not self.meta_router:
+            return
+
+        try:
+            # Import specialists
+            from src.strategy.range_mr import RangeMeanReversionSpecialist
+            from src.strategy.trend_pb_bo import TrendPullbackBreakoutSpecialist
+            from src.strategy.vol_breakout import VolumeBreakoutSpecialist
+            from src.strategy.xsect_momentum import CrossSectionalMomentumSpecialist
+
+            # Register specialists with Meta-Router
+            specialists = [
+                TrendPullbackBreakoutSpecialist(),
+                RangeMeanReversionSpecialist(),
+                VolumeBreakoutSpecialist(),
+                CrossSectionalMomentumSpecialist()
+            ]
+
+            for specialist in specialists:
+                self.meta_router.register_specialist(specialist)
+
+            self.logger.info(f"Meta-Router: {len(specialists)} uzman kayit edildi")
+
+        except ImportError as e:
+            self.logger.warning(f"Meta-Router specialist import hatasi: {e}")
+        except Exception as e:
+            self.logger.error(f"Meta-Router specialist init hatasi: {e}")
+
     def _startup_maintenance(self) -> None:
         """Perform startup maintenance tasks"""
+        # Initialize advanced metrics monitoring
+        from src.utils.advanced_metrics import get_metrics_collector
+        get_metrics_collector().start_collection()
+        self.logger.info("Advanced metrics collection started")
+
         # Startup weighted pnl recompute (opt-in)
         with contextlib.suppress(Exception):
             if os.getenv('ENABLE_STARTUP_RECOMPUTE'):
@@ -171,8 +241,13 @@ class Trader:
                 create_config_snapshot("trader_startup")
 
     # --- Public API (stable surface for tests) ---
+    @profile_performance()
     def execute_trade(self, signal: Dict[str, Any]) -> bool:
         """Tek sinyal isleyip pozisyon acmaya calisir."""
+        import time
+
+        start_time = time.time()
+
         # Gunluk risk reset kontrolu
         self._maybe_daily_risk_reset()
 
@@ -183,13 +258,23 @@ class Trader:
             signal['close_price'] = signal['price']
         ok, ctx = pre_trade_pipeline(self, signal)
         if not ok:
+            # Record failed trade attempt
+            latency_ms = (time.time() - start_time) * 1000
+            get_trading_metrics().record_trade_latency(latency_ms, 'failed_precheck')
             return False
         with self._lock:
             res = _open_position(self, signal, ctx)
+
+        # Record trade execution latency
+        latency_ms = (time.time() - start_time) * 1000
+        trade_type = 'successful' if res else 'failed_execution'
+        get_trading_metrics().record_trade_latency(latency_ms, trade_type)
+
         maybe_flush_metrics(self)
         maybe_check_anomalies(self)
         return res
 
+    @profile_performance()
     def process_price_update(self, symbol: str, last_price: float) -> None:
         pos = self.positions.get(symbol)
         if not pos:
@@ -206,6 +291,7 @@ class Trader:
         maybe_flush_metrics(self)
         maybe_check_anomalies(self)
 
+    @profile_performance()
     def close_position(self, symbol: str) -> bool:
         with self._lock:
             res = _close_position(self, symbol)
@@ -227,11 +313,33 @@ class Trader:
     def unrealized_total(self) -> float:
         """UI için toplam gerçekleşmemiş PnL hesapla"""
         try:
-            # Placeholder: Simdilik 0 donduruyoruz, symbol degiskeni kullanilmadigi icin alt cizgi ile isaretle.
-            for _symbol, pos_data in self.positions.items():
-                if pos_data and 'position_size' in pos_data:
-                    pass
-            return 0.0
+            total_unrealized = 0.0
+
+            for symbol, pos_data in self.positions.items():
+                if pos_data and 'position_size' in pos_data and 'entry_price' in pos_data:
+                    position_size = pos_data['position_size']
+                    entry_price = pos_data['entry_price']
+
+                    if position_size != 0 and entry_price > 0:
+                        # Get current market price
+                        try:
+                            ticker = self.api.get_ticker(symbol)
+                            if ticker and 'price' in ticker:
+                                current_price = float(ticker['price'])
+
+                                # Calculate unrealized PnL
+                                side = pos_data.get('side', 'LONG')
+                                if side == 'LONG':
+                                    unrealized_pnl = (current_price - entry_price) * abs(position_size)
+                                else:  # SHORT
+                                    unrealized_pnl = (entry_price - current_price) * abs(position_size)
+
+                                total_unrealized += unrealized_pnl
+                        except Exception:
+                            # Skip if can't get current price
+                            continue
+
+            return total_unrealized
         except Exception:
             return 0.0
 
@@ -304,6 +412,77 @@ class Trader:
     # alias for guard check in execution module
     def correlation_ok(self, symbol: str, price: float) -> bool:  # pragma: no cover
         return correlation_ok(self, symbol, price)
+
+    def _check_spread_guard(self, symbol: str) -> bool:
+        """A30 PoR: Check spread guard to prevent trading on wide spreads.
+
+        Returns:
+            True if spread is acceptable or guard disabled, False to block trade
+        """
+        try:
+            if not Settings.SPREAD_GUARD_ENABLED:
+                return True
+
+            # Get current ticker for bid/ask prices
+            ticker = self.api.get_ticker(symbol)
+            if not ticker or 'bidPrice' not in ticker or 'askPrice' not in ticker:
+                # No ticker data available - allow trade (fail open)
+                return True
+
+            bid_price = float(ticker['bidPrice'])
+            ask_price = float(ticker['askPrice'])
+
+            if bid_price <= 0 or ask_price <= 0:
+                # Invalid prices - allow trade (fail open)
+                return True
+
+            # Calculate spread in basis points
+            mid_price = (bid_price + ask_price) / 2
+            spread_bps = ((ask_price - bid_price) / mid_price) * 10000
+
+            max_spread_bps = Settings.SPREAD_MAX_BPS
+
+            if spread_bps > max_spread_bps:
+                self.logger.warning(f"{symbol} spread too wide: {spread_bps:.1f} bps > {max_spread_bps} bps")
+                with contextlib.suppress(Exception):
+                    slog('guard_block', symbol=symbol, guard='spread',
+                         spread_bps=spread_bps, max_bps=max_spread_bps,
+                         bid_price=bid_price, ask_price=ask_price)
+                return False
+
+            return True
+
+        except Exception:
+            # Error in spread check - allow trade (fail open)
+            return True
+
+    def _handle_slippage_abort(self, order_context, order, corrective_action):
+        """Handle slippage guard ABORT action - emergency position close if needed"""
+        try:
+            symbol = order_context.symbol
+
+            # If market order executed despite slippage guard, close position immediately
+            if order and order.get('status') in ['FILLED', 'PARTIALLY_FILLED']:
+                self.logger.warning(f"{symbol}: Emergency close due to slippage abort")
+
+                # Add position to memory if not already there
+                if symbol not in self.positions:
+                    # Reconstruct basic position info from order
+                    self.positions[symbol] = {
+                        'symbol': symbol,
+                        'side': order_context.side,
+                        'entry_price': order.get('price', order_context.price),
+                        'remaining_size': float(order.get('executedQty', order_context.position_size)),
+                        'position_size': float(order.get('executedQty', order_context.position_size)),
+                        'trade_id': None  # Will be set by record_open if called
+                    }
+
+                # Close position immediately
+                self.close_position(symbol)
+
+        except Exception as e:
+            self.logger.error(f"Error in slippage abort handler: {e}")
+            return True
 
     # Backward compat: eski testler _check_correlation_guard bekliyor
     def _check_correlation_guard(self, symbol: str):  # pragma: no cover
@@ -503,10 +682,108 @@ class Trader:
 
     # --- Internal Init Helpers (CR-0080) ---
     def _init_components(self):
-        self.api = BinanceAPI()
-        self.risk_manager = RiskManager()
-        self.trade_store = TradeStore()
-        self.corr_cache = CorrelationCache(window=Settings.CORRELATION_WINDOW, ttl_seconds=Settings.CORRELATION_TTL_SECONDS)
+        """Initialize core components with enhanced state management and error handling"""
+        # Thread-safe component initialization with state consistency
+        import threading
+        if not hasattr(self, '_init_lock'):
+            self._init_lock = threading.RLock()
+
+        with self._init_lock:
+            # Prevent duplicate initialization races
+            if hasattr(self, '_components_initialized'):
+                return
+
+            try:
+                # Core API and data components
+                self.api = BinanceAPI()
+                self.risk_manager = RiskManager()
+                self.trade_store = TradeStore()
+                self.corr_cache = CorrelationCache(
+                    window=Settings.CORRELATION_WINDOW,
+                    ttl_seconds=Settings.CORRELATION_TTL_SECONDS
+                )
+
+                # State management initialization
+                self._state_manager = {
+                    'component_status': {},
+                    'last_sync_time': {},
+                    'error_counts': defaultdict(int),
+                    'restart_counts': defaultdict(int)
+                }
+
+                # Component health tracking
+                components = ['api', 'risk_manager', 'trade_store', 'corr_cache']
+                current_time = time.time()
+                for comp in components:
+                    self._state_manager['component_status'][comp] = 'healthy'
+                    self._state_manager['last_sync_time'][comp] = current_time
+
+                # A32 Edge Hardening components (conditional initialization with state tracking)
+                self._edge_monitor = None
+                self._cost_calculator = None
+                self._micro_filter = None
+
+                if getattr(Settings, 'A32_EDGE_HARDENING_ENABLED', False):
+                    try:
+                        self._edge_monitor = get_edge_health_monitor()
+                        self._cost_calculator = get_cost_calculator()
+                        self._micro_filter = get_microstructure_filter()
+
+                        # Track A32 component states
+                        a32_components = ['edge_monitor', 'cost_calculator', 'micro_filter']
+                        for comp in a32_components:
+                            self._state_manager['component_status'][comp] = 'healthy'
+                            self._state_manager['last_sync_time'][comp] = current_time
+
+                        self.logger.info("A32 Edge Hardening systems initialized with state tracking")
+                    except Exception as e:
+                        self.logger.warning(f"A32 Edge Hardening initialization failed: {e}")
+                        # Mark A32 components as failed but continue - fail-safe mode
+                        self._edge_monitor = None
+                        self._cost_calculator = None
+                        self._micro_filter = None
+
+                        for comp in ['edge_monitor', 'cost_calculator', 'micro_filter']:
+                            self._state_manager['component_status'][comp] = 'failed'
+                            self._state_manager['error_counts'][comp] += 1
+
+                # Mark initialization complete
+                self._components_initialized = True
+                self.logger.info("All components initialized successfully with state management")
+
+            except Exception as e:
+                self.logger.error(f"Critical component initialization failure: {e}")
+                # Enhanced error handling: reset initialization flag for retry
+                if hasattr(self, '_components_initialized'):
+                    delattr(self, '_components_initialized')
+                raise  # Re-raise to prevent invalid state
+
+    def _check_component_health(self) -> Dict[str, str]:
+        """Check health status of all components"""
+        if not hasattr(self, '_state_manager'):
+            return {'status': 'not_initialized'}
+
+        health = {}
+        current_time = time.time()
+
+        for component, status in self._state_manager['component_status'].items():
+            last_sync = self._state_manager['last_sync_time'].get(component, 0)
+            age_sec = current_time - last_sync
+
+            if status == 'failed':
+                health[component] = 'failed'
+            elif age_sec > 300:  # 5 minutes stale
+                health[component] = 'stale'
+            else:
+                health[component] = 'healthy'
+
+        return health
+
+    def _sync_component_state(self, component: str, status: str = 'healthy'):
+        """Update component state with timestamp"""
+        if hasattr(self, '_state_manager'):
+            self._state_manager['component_status'][component] = status
+            self._state_manager['last_sync_time'][component] = time.time()
 
     def _init_state(self):
         self.positions: Dict[str, Dict[str, Any]] = {}
@@ -515,13 +792,38 @@ class Trader:
         self._lock = threading.RLock()
         self._started = False
         self.market_mode = RuntimeConfig.get_market_mode()
-        self.start_balance = 10_000.0
+
+        # Initialize start_balance from API account data
+        self.start_balance = self._get_initial_balance()
 
         # Reload open positions from DB
         with contextlib.suppress(Exception):
             if not os.getenv('DISABLE_POSITION_RELOAD'):
                 self._reload_open_positions()
     # no return
+
+    def _get_initial_balance(self) -> float:
+        """Get initial balance from API or fallback to reasonable default"""
+        try:
+            account_data = self.api.get_account()
+            if account_data:
+                # Spot account total balance
+                if 'balances' in account_data:
+                    usdt_balance = 0.0
+                    for balance in account_data['balances']:
+                        if balance['asset'] == 'USDT':
+                            usdt_balance = float(balance['free']) + float(balance['locked'])
+                            break
+                    if usdt_balance > 0:
+                        return usdt_balance
+                # Futures account total wallet balance
+                elif 'totalWalletBalance' in account_data:
+                    return float(account_data['totalWalletBalance'])
+        except Exception as e:
+            print(f"[WARNING] Initial balance API cagrisi basarisiz: {e}")
+
+        # Fallback to reasonable default for testnet/demo
+        return 10_000.0
 
     def increment_guard_counter(self, guard: str) -> None:
         """Increment guard counter with persistence (CR-0069)"""
@@ -933,3 +1235,70 @@ class Trader:
             self.logger.warning(f"risk_reset hata:{e}")
             slog('exception_capture', scope='risk_reset', error=str(e))
             return False
+
+    def check_time_stop(self, symbol: str) -> bool:
+        """A30 PoR: Check if time stop should trigger for a position.
+
+        Returns:
+            True if position should be closed due to time limit, False otherwise
+        """
+        try:
+            if not Settings.TIME_STOP_ENABLED:
+                return False
+
+            # Get position for this symbol
+            open_trades = self.trade_store.open_trades()
+            symbol_position = None
+            for trade in open_trades:
+                if trade['symbol'] == symbol:
+                    symbol_position = trade
+                    break
+
+            if not symbol_position:
+                return False
+
+            # Calculate time elapsed since position opening
+            created_ts = symbol_position.get('created_ts')
+            if not created_ts:
+                return False
+
+            # Parse created_ts (ISO format)
+            try:
+                if isinstance(created_ts, str):
+                    created_dt = datetime.fromisoformat(created_ts.replace('Z', '+00:00'))
+                else:
+                    created_dt = created_ts
+
+                current_dt = datetime.now(created_dt.tzinfo if created_dt.tzinfo else None)
+                elapsed_hours = (current_dt - created_dt).total_seconds() / 3600
+
+                # Convert bars to hours based on timeframe
+                timeframe = Settings.TIMEFRAME
+                hours_per_bar = 1  # Default for 1h
+                if timeframe == '4h':
+                    hours_per_bar = 4
+                elif timeframe == '1d':
+                    hours_per_bar = 24
+                elif timeframe == '30m':
+                    hours_per_bar = 0.5
+                elif timeframe == '15m':
+                    hours_per_bar = 0.25
+                elif timeframe == '5m':
+                    hours_per_bar = 1/12
+
+                time_stop_bars = Settings.TIME_STOP_BARS
+                max_hours = time_stop_bars * hours_per_bar
+
+                if elapsed_hours >= max_hours:
+                    self.logger.info(f"{symbol} time stop triggered: {elapsed_hours:.1f}h >= {max_hours}h")
+                    slog('time_stop_triggered', symbol=symbol,
+                         elapsed_hours=elapsed_hours, max_hours=max_hours)
+                    return True
+
+            except Exception as e:
+                self.logger.debug(f"Time stop calculation error for {symbol}: {e}")
+
+        except Exception as e:
+            self.logger.debug(f"Time stop check error for {symbol}: {e}")
+
+        return False

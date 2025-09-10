@@ -1,0 +1,100 @@
+Core Modules Inventory (Created 2025-08-24)
+================================================
+Scope: data_fetcher, indicators, risk_manager, signal_generator, UI (main_window, signal_window, unreal_label)
+
+1. data_fetcher.py
+------------------
+Responsibility: Manage pair list, fetch & validate historical OHLCV CSV data, detect stale data, basic normalization/repair.
+Key Functions:
+ - update_top_pairs(limit): writes top_150_pairs.json (dedup, age >60m triggers refresh)
+ - load_top_pairs(ensure): conditional refresh logic + ANALYSIS_PAIRS_LIMIT slice
+ - detect_stale_pairs(interval,max_age): classifies stale/fresh/errors
+ - validate_dataset(interval, repair): structural integrity (min rows, NA, timestamp) optional auto-refetch
+ - get_pair_data(symbol,...): load + resilient timestamp normalization fallback
+Gaps / Notes:
+ - fetch_data / fetch_data_parallel generic hooks unimplemented (future multi-source ingestion)
+ - No caching layer (each call reads disk; acceptable now)
+ - Potential CR: Add incremental update (append newest candles) vs full refetch (CR-CANDIDATE-DF-INCR).
+ - Consider persisting stale check statistics (last run ts) for monitoring.
+
+2. indicators.py (IndicatorCalculator)
+-------------------------------------
+Responsibility: Load indicator config JSON; compute TA indicators; produce composite adaptive score and signal.
+Key Logic:
+ - calculate_all_indicators: config-driven; gracefully skips failing indicators.
+ - score_indicators: weighting with ADX regime modulation; ATR volatility penalty; oscillator fusion; returns contributions + risk multiplier.
+ - get_signal: simple threshold mapping (hysteresis handled elsewhere).
+Legacy Helpers: individual calc_* functions retained for tests.
+Gaps / Notes:
+ - ADX weight currently excluded (0.0) except modulation; deliberate but document in SSoT if stable.
+ - Risk multiplier formula linear; could evolve to nonlinear curve (CR-CANDIDATE-ATR-RISK-FN).
+ - Missing unit tests for Bollinger squeeze adjustment & ATR penalty bounds.
+
+3. risk_manager.py (RiskManager)
+--------------------------------
+Responsibility: Position sizing (risk% / stop distance), stop-loss & take-profit (ATR or fallback), leverage guard.
+Key Methods:
+ - _resolve_stop_distance: ATR * multiplier or fallback %.
+ - calculate_position_size: risk_amount / stop_pct with leverage scaling & margin cap (<=90% balance)
+ - calculate_stop_loss / calculate_take_profit
+ - apply_slippage_protection: simple ±0.1% buffer.
+Gaps / Notes:
+ - Slippage protection static; could be dynamic based on recent slippage metrics (CR-CANDIDATE-SLIP-DYN).
+ - No direct integration test for leverage margin cap branch (ensure coverage). 
+ - Min volume & max positions checks exist but enforcement integration location outside (guards) – ensure consistent usage audit.
+
+4. signal_generator.py (SignalGenerator)
+---------------------------------------
+Responsibility: Generate per-symbol signals with hysteresis & dynamic threshold overrides; serialize indicator outputs.
+Key Steps:
+ - generate_signals: iterate pairs, attach timestamp_iso, collect signals dict.
+ - generate_pair_signal: load data -> indicators -> score -> ADX regime suppression -> hysteresis using dynamic overrides (threshold_overrides.json) -> serialize.
+ - _serialize_indicators: reduce pandas Series/dicts to final scalar snapshot.
+ - _prev_signals thread-safe map for hysteresis (lock usage minimal).
+Gaps / Notes:
+ - threshold_overrides file IO every symbol (micro-inefficiency) — cache per run (CR-CANDIDATE-TH-OVR-CACHE).
+ - Hysteresis exit threshold clamp logic could be unit-tested (edge ordering of buy_exit/sell_exit).
+ - Percent change uses last two closes only; optional smoothing maybe later.
+
+5. UI
+-----
+5.1 main_window.py (Stub MainWindow)
+ - Minimal tabs: Positions, Metrics, Closed Trades, Signals; metrics label updater; websocket symbol selection via _compute_ws_symbols; signal capacity & dedup logic; closed trades loader (lazy TradeStore instantiation).
+ - Trader dependency replaced by _TraderMetricsStub (latencies/slippage lists) for test isolation.
+Gaps / Notes: Trailing & execution visual elements intentionally deferred; ensure CR-0022 completion tasks (ASCII normalization final pass) tracked.
+
+5.2 signal_window.py (SignalWindow)
+ - Rich signal analysis window: filter (signal type, min score, search), auto refresh timer, detail panel.
+ - apply_filters: sorts by signal priority then score; color coding; flicker mitigation (updates disabled during rebuild).
+ - Live update coalescing (singleShot 150ms) to prevent thrash.
+Gaps / Notes: Large file (>300 lines); potential decomposition (CR-CANDIDATE-UI-SIGNAL-REFactor) for testability (split filtering/render).
+
+5.3 unreal_label.py
+ - Pure formatter (format_total_unreal_label) returns text & color; robust float coercion; simple threshold (pos/neg/zero).
+ - Fully covered by unit tests per CR-0021.
+
+Cross-Cutting Improvement Candidates (New CR Seeds)
+--------------------------------------------------
+CR-0028 Backtest Orchestrator Skeleton (DONE earlier; listed here for completeness)
+CR-0029 Indicator ATR Penalty Nonlinear Curve (evaluate logistic scaling)
+CR-0030 Threshold Overrides Caching Layer in SignalGenerator
+CR-0031 Dynamic Slippage Buffer using recent metrics
+CR-0032 Incremental Candle Append in DataFetcher
+CR-0033 SignalWindow Refactor (separate data, filter, view components)
+CR-0034 Unit Tests: Bollinger squeeze weighting, ATR penalty bounds, hysteresis clamp logic
+
+Dependencies & Interactions Summary
+-----------------------------------
+ - DataFetcher -> BinanceAPI, Settings paths.
+ - SignalGenerator -> DataFetcher, IndicatorCalculator, threshold_overrides.json file.
+ - IndicatorCalculator -> JSON config (indicators.json), pandas, ta.* libs.
+ - RiskManager -> Settings, RuntimeConfig (market mode), downstream usage in execution sizing.
+ - UI -> TradeStore (closed trades), stubbed trader metrics; minimal coupling.
+
+Validation Status
+-----------------
+ - Files parsed successfully 2025-08-24.
+ - No modifications performed to source modules in this inventory creation.
+ - Pending tests recommended (see CR seeds) not yet implemented.
+
+End of core_inventory.txt

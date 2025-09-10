@@ -4,7 +4,45 @@ __pycache__/
 .DS_Store
 venv/
 .venv/
+.venv_tmp_test/
 .mypy_cache/
 .pytest_cache/
 .idea/
 .vscode/
+.vs/
+
+# Test/Run artefacts
+test_latency_slip.db
+test_output.txt
+test_run_output.txt
+test_fullsuite_output.txt
+test_fullsuite_output_final.txt
+fast_result.json
+full_result.json
+simple_realistic_results.json
+
+# Runtime data (SQLite & logs)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/logs/*.log
+data/logs/shutdown_snapshot.json
+data/logs/offline/*
+data/testnet/logs/offline/*
+data/testnet/logs/testnet/*
+data/testnet/trades.db*
+data/config_snapshots/*
+
+# Metrics and processed data
+data/processed/metrics/*.jsonl.gz
+data/processed/metrics/*.jsonl
+data/testnet/processed/metrics/testnet/*.jsonl.gz
+data/testnet/processed/metrics/testnet/*.jsonl
+
+# Backup snapshots
+backup/snapshot_*/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

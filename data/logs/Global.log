@@ -198,3 +198,778 @@ Traceback (most recent call last):
                                      ^^^^^^^^^^^^^^^^^
 AttributeError: 'MainWindow' object has no attribute '_tab_changed'
 
+2025-08-25 11:28:03,804 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'scale_out_plans'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 89, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 76, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 100, in __init__
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 260, in _build_ui
+    self._build_tabs()
+  File "D:\trade_bot\src\ui\main_window.py", line 317, in _build_tabs
+    self.create_scale_out_tab()  # CR-0052
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 625, in create_scale_out_tab
+    self.refresh_scale_out_tab()
+  File "D:\trade_bot\src\ui\main_window.py", line 645, in refresh_scale_out_tab
+    syms = sorted(set(self.scale_out_plans.keys()) | set(self.scale_out_executed.keys()))
+                      ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'scale_out_plans'
+
+2025-08-26 09:26:14,190 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'NoneType' object has no attribute 'generate_signals'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\signal_window.py", line 217, in refresh_data
+    self.load_data()
+  File "D:\trade_bot\src\ui\signal_window.py", line 195, in load_data
+    self.signals = self.signal_generator.generate_signals()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'generate_signals'
+
+2025-08-26 09:35:37,156 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'NoneType' object has no attribute 'generate_signals'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\signal_window.py", line 217, in refresh_data
+    self.load_data()
+  File "D:\trade_bot\src\ui\signal_window.py", line 195, in load_data
+    self.signals = self.signal_generator.generate_signals()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'generate_signals'
+
+2025-08-26 09:45:44,944 ERROR Global - UNCAUGHT EXCEPTION: NameError: name 'QGroupBox' is not defined
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 95, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 82, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 130, in __init__
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 288, in _build_ui
+    self._build_tabs()
+  File "D:\trade_bot\src\ui\main_window.py", line 420, in _build_tabs
+    self.create_backtest_tab()  # Backtest sekmesi ekle
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 498, in create_backtest_tab
+    controls_group = QGroupBox("Backtest Kontrolleri")
+                     ^^^^^^^^^
+NameError: name 'QGroupBox' is not defined
+
+2025-08-26 10:23:19,468 ERROR Global - UNCAUGHT EXCEPTION: NameError: name 'scroll_area' is not defined
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 95, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 82, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 131, in __init__
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 308, in _build_ui
+    self._build_tabs()
+  File "D:\trade_bot\src\ui\main_window.py", line 444, in _build_tabs
+    self.create_params_tab()  # CR-0050
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 1160, in create_params_tab
+    scroll_area.setWidget(scroll_widget)
+    ^^^^^^^^^^^
+NameError: name 'scroll_area' is not defined
+
+2025-08-26 10:23:59,394 ERROR Global - UNCAUGHT EXCEPTION: NameError: name 'scroll_area' is not defined
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 95, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 82, in main
+    window = MainWindow()
+             ^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 131, in __init__
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 308, in _build_ui
+    self._build_tabs()
+  File "D:\trade_bot\src\ui\main_window.py", line 444, in _build_tabs
+    self.create_params_tab()  # CR-0050
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 1160, in create_params_tab
+    scroll_area.setWidget(scroll_widget)
+    ^^^^^^^^^^^
+NameError: name 'scroll_area' is not defined
+
+2025-08-26 13:05:05,987 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:05:21,904 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:05:36,000 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:05:51,925 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:06:06,019 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:06:21,910 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:06:36,027 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:06:52,429 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:07:06,045 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'Trader' object has no attribute 'unrealized_total'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1674, in _update_position_metrics_labels
+    self._set_total_unreal_label(self.trader.unrealized_total())
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Trader' object has no attribute 'unrealized_total'
+
+2025-08-26 13:19:34,094 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'pos_latency_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2022, in _update_position_metrics_labels
+    self.pos_latency_label.setText(lat)
+    ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'pos_latency_label'
+
+2025-08-26 13:19:49,096 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'pos_latency_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2022, in _update_position_metrics_labels
+    self.pos_latency_label.setText(lat)
+    ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'pos_latency_label'
+
+2025-08-26 13:21:04,147 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'risk_level_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2049, in _update_risk_escalation_status
+    status = self.trader.risk_escalation.check_risk_level()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RiskEscalation' object has no attribute 'check_risk_level'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2034, in _update_position_metrics_labels
+    self._update_risk_escalation_status()
+  File "D:\trade_bot\src\ui\main_window.py", line 2080, in _update_risk_escalation_status
+    self.risk_level_label.setText(f"Risk Level: Error ({str(e)})")
+    ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'risk_level_label'
+
+2025-08-26 13:21:19,165 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'risk_level_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2049, in _update_risk_escalation_status
+    status = self.trader.risk_escalation.check_risk_level()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RiskEscalation' object has no attribute 'check_risk_level'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2034, in _update_position_metrics_labels
+    self._update_risk_escalation_status()
+  File "D:\trade_bot\src\ui\main_window.py", line 2080, in _update_risk_escalation_status
+    self.risk_level_label.setText(f"Risk Level: Error ({str(e)})")
+    ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'risk_level_label'
+
+2025-08-26 13:21:34,166 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'risk_level_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2049, in _update_risk_escalation_status
+    status = self.trader.risk_escalation.check_risk_level()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RiskEscalation' object has no attribute 'check_risk_level'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2034, in _update_position_metrics_labels
+    self._update_risk_escalation_status()
+  File "D:\trade_bot\src\ui\main_window.py", line 2080, in _update_risk_escalation_status
+    self.risk_level_label.setText(f"Risk Level: Error ({str(e)})")
+    ^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'risk_level_label'
+
+2025-08-26 13:22:19,853 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    self.prometheus_status_label.setText(f"Prometheus: <span style='color:{prom_color}'>{prom_text}</span>")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    self._update_system_status()
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    self.prometheus_status_label.setText(f"Prometheus: Hata ({e!s})")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:22:34,863 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    self.prometheus_status_label.setText(f"Prometheus: <span style='color:{prom_color}'>{prom_text}</span>")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    self._update_system_status()
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    self.prometheus_status_label.setText(f"Prometheus: Hata ({e!s})")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:22:49,863 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    self.prometheus_status_label.setText(f"Prometheus: <span style='color:{prom_color}'>{prom_text}</span>")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    self._update_system_status()
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    self.prometheus_status_label.setText(f"Prometheus: Hata ({e!s})")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:23:04,878 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    else:
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:23:19,908 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:23:34,900 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:23:49,894 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:24:04,913 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:24:19,923 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:24:34,927 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:24:49,943 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:25:04,953 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:25:19,951 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:25:34,955 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:25:49,967 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:26:04,962 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:26:19,956 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:26:34,970 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:26:49,971 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:27:04,977 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:27:19,984 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    try:
+        ^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    # System Status Updates - unified compatible
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    guard_stats = getattr(self.trader.guard_system, 'stats', {})
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-08-26 13:27:35,000 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2099, in _update_system_status
+    def _update_system_status(self):  # pragma: no cover
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 2037, in _update_position_metrics_labels
+    self._update_risk_escalation_status()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2132, in _update_system_status
+    # Guard Events (CR-0069)
+AttributeError: 'MainWindow' object has no attribute 'prometheus_status_label'
+
+2025-09-04 18:20:55,805 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1539, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-05 02:48:28,398 ERROR Global - UNCAUGHT EXCEPTION: OperationalError: no such column: dedup_key
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 107, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 85, in main
+    trader = Trader()
+             ^^^^^^^^
+  File "D:\trade_bot\src\trader\core.py", line 82, in __init__
+    self._init_components()
+  File "D:\trade_bot\src\trader\core.py", line 508, in _init_components
+    self.trade_store = TradeStore()
+                       ^^^^^^^^^^^^
+  File "D:\trade_bot\src\utils\trade_store.py", line 89, in __init__
+    self._conn.executescript(SCHEMA_SQL)
+sqlite3.OperationalError: no such column: dedup_key
+
+2025-09-05 02:54:42,817 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1456, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-05 03:34:41,493 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1456, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-06 01:48:03,855 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1456, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-06 09:01:41,141 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1464, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-06 09:12:37,816 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1464, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-06 09:13:04,520 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1464, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-06 10:33:56,560 ERROR Global - UNCAUGHT EXCEPTION: TypeError: setValue(self, val: int): argument 1 has unexpected type 'float'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 107, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 88, in main
+    window = MainWindow(trader=trader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 189, in __init__
+    self._post_init_setup()
+  File "D:\trade_bot\src\ui\main_window.py", line 312, in _post_init_setup
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 507, in _build_ui
+    params_tab = self.create_params_tab()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2252, in create_params_tab
+    self.min_volume_spin.setValue(getattr(Settings, 'DEFAULT_MIN_VOLUME', 1000))
+TypeError: setValue(self, val: int): argument 1 has unexpected type 'float'
+
+2025-09-06 10:34:47,862 ERROR Global - UNCAUGHT EXCEPTION: TypeError: setValue(self, val: int): argument 1 has unexpected type 'float'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 107, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 88, in main
+    window = MainWindow(trader=trader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 189, in __init__
+    self._post_init_setup()
+  File "D:\trade_bot\src\ui\main_window.py", line 312, in _post_init_setup
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 507, in _build_ui
+    params_tab = self.create_params_tab()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2252, in create_params_tab
+    self.min_volume_spin.setValue(getattr(Settings, 'DEFAULT_MIN_VOLUME', 1000))
+TypeError: setValue(self, val: int): argument 1 has unexpected type 'float'
+
+2025-09-06 10:49:47,373 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'load_settings'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 107, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 88, in main
+    window = MainWindow(trader=trader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 189, in __init__
+    self._post_init_setup()
+  File "D:\trade_bot\src\ui\main_window.py", line 312, in _post_init_setup
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 507, in _build_ui
+    params_tab = self.create_params_tab()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 2426, in create_params_tab
+    load_btn.clicked.connect(self.load_settings)
+                             ^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'load_settings'
+
+2025-09-07 01:35:31,760 ERROR Global - UNCAUGHT EXCEPTION: AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 1592, in _on_backtest_finished
+    self.backtest_summary_label.setText("✅ Backtest tamamlandı! Detaylar tabloda.")
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'backtest_summary_label'
+
+2025-09-07 04:23:02,487 ERROR Global - UNCAUGHT EXCEPTION: UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 0: character maps to <undefined>
+Traceback (most recent call last):
+  File "D:\trade_bot\src\ui\main_window.py", line 4924, in _init_scheduler
+    print("✅ Scheduler başlatıldı")
+  File "C:\Users\kocbe\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1254.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in position 0: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 107, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 88, in main
+    window = MainWindow(trader=trader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 200, in __init__
+    self._post_init_setup()
+  File "D:\trade_bot\src\ui\main_window.py", line 323, in _post_init_setup
+    self._build_ui()
+  File "D:\trade_bot\src\ui\main_window.py", line 531, in _build_ui
+    self.create_bot_control_tab()    # Bot Kontrol
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 3879, in create_bot_control_tab
+    self._init_scheduler()
+  File "D:\trade_bot\src\ui\main_window.py", line 4927, in _init_scheduler
+    print(f"❌ Scheduler başlatılırken hata: {e}")
+  File "C:\Users\kocbe\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1254.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 0: character maps to <undefined>
+

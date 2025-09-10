@@ -1,8 +1,11 @@
 """Trailing ve kismi cikis mantigi."""
 from __future__ import annotations
+
 import contextlib
-from typing import Dict, Any
+from typing import Any, Dict
+
 from config.settings import Settings
+
 from src.utils.structured_log import slog
 
 
@@ -50,45 +53,64 @@ def maybe_partial_exits(self, symbol: str, pos: Dict[str, Any], last_price: floa
             continue
         if r_gain < level:
             continue
-        # DB idempotency guard (teorik cift invocation durumuna karsi)
+
+        # Enhanced atomic DB idempotency guard with proper locking
         if pos.get('trade_id') is not None:
             try:
-                cur = self.trade_store._conn.cursor()
-                row = cur.execute("SELECT 1 FROM executions WHERE trade_id=? AND exec_type='scale_out' AND ABS(r_mult-?)<0.0001 LIMIT 1", (pos['trade_id'], level)).fetchone()
-                if row:
-                    done_levels.add(level)
-                    continue
-            except Exception:
-                pass
-        qty = remaining * pct
-        if qty <= 0:
-            continue
-        if pos.get('trade_id') is not None:
-            result = self.trade_store.record_scale_out(pos['trade_id'], symbol, qty, last_price, level)
-            self.logger.debug(f"Partial exit DB write result: {result}")
-            if not result:
-                import json
-                import sqlite3
-                TOL = 1e-9
-                try:
-                    cur = self.trade_store._conn.cursor()
-                    row = cur.execute("SELECT scaled_out_json FROM trades WHERE id=?", (pos['trade_id'],)).fetchone()
-                    existing = []
-                    if row and row[0]:
-                        with contextlib.suppress(Exception):
-                            existing = json.loads(row[0]) or []
-                    if not any(abs(e.get('r_mult', -999) - level) < TOL for e in existing):
-                        existing.append({'r_mult': level, 'qty': qty})
-                        cur.execute("UPDATE trades SET scaled_out_json=? WHERE id=?", (json.dumps(existing, ensure_ascii=False), pos['trade_id']))
-                        self.trade_store._conn.commit()
-                except sqlite3.Error:
-                    pass
+                # Use database transaction for atomicity with proper connection lifecycle
+                with self.trade_store._ensure_conn() as conn:  # Ensure connection exists before context manager
+                    cur = conn.cursor()
+                    # Check for existing partial exit at this level
+                    row = cur.execute(
+                        "SELECT 1 FROM executions WHERE trade_id=? AND exec_type='scale_out' AND ABS(r_mult-?)<0.0001 LIMIT 1",
+                        (pos['trade_id'], level)
+                    ).fetchone()
+                    if row:
+                        done_levels.add(level)
+                        continue
+
+                    # Atomic insert to prevent race conditions
+                    qty = remaining * pct
+                    if qty <= 0:
+                        continue
+
+                    # Record the partial exit atomically
+                    result = self.trade_store.record_scale_out(pos['trade_id'], symbol, qty, last_price, level)
+                    if not result:
+                        # Enhanced fallback with atomic JSON update
+                        import json
+                        row = cur.execute("SELECT scaled_out_json FROM trades WHERE id=?", (pos['trade_id'],)).fetchone()
+                        existing = []
+                        if row and row[0]:
+                            try:
+                                existing = json.loads(row[0]) or []
+                            except (json.JSONDecodeError, TypeError) as e:
+                                self.logger.error(f"Failed to parse scaled_out_json: {e}")
+                                existing = []
+
+                        # Check for duplicate before adding
+                        TOL = 1e-9
+                        if not any(abs(e.get('r_mult', -999) - level) < TOL for e in existing):
+                            existing.append({'r_mult': level, 'qty': qty})
+                            cur.execute("UPDATE trades SET scaled_out_json=? WHERE id=?",
+                                       (json.dumps(existing, ensure_ascii=False), pos['trade_id']))
+
+            except Exception as e:
+                self.logger.error(f"Partial exit DB operation failed for {symbol} level {level}: {e}")
+                continue  # Skip this level if DB operation fails
+        else:
+            qty = remaining * pct
+            if qty <= 0:
+                continue
+
         remaining -= qty
         pos['remaining_size'] = remaining
         pos.setdefault('scaled_out', []).append((level, qty))
         done_levels.add(level)
         self.logger.info(f"Partial exit {symbol} r={level} qty={qty:.6f} rem={remaining:.6f}")
         slog('partial_exit', symbol=symbol, r_mult=level, qty=qty, remaining=remaining, trade_id=pos.get('trade_id'))
+
+        # Breakeven stop adjustment with validation
         if (pos['side'] == 'BUY' and last_price > pos['entry_price']) or (pos['side'] == 'SELL' and last_price < pos['entry_price']):
             if pos['side'] == 'BUY':
                 pos['stop_loss'] = max(pos['stop_loss'], pos['entry_price'])

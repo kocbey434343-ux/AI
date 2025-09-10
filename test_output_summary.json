@@ -1,24 +1,11 @@
 {
-  "exitstatus": 0,
+  "exitstatus": 2,
   "summary": {
-    "passed": 2,
+    "passed": 0,
     "failed": 0,
     "skipped": 0,
-    "total": 2,
-    "collected": 2
+    "total": 0,
+    "collected": 546
   },
-  "results": [
-    {
-      "nodeid": "tests/test_anomaly_risk_reduction.py::test_anomaly_risk_reduction_latency_and_recovery",
-      "outcome": "passed",
-      "duration": 0.519782,
-      "longrepr": null
-    },
-    {
-      "nodeid": "tests/test_anomaly_risk_reduction.py::test_anomaly_risk_reduction_slippage",
-      "outcome": "passed",
-      "duration": 0.4911,
-      "longrepr": null
-    }
-  ]
+  "results": []
 }

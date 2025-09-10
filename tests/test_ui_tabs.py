@@ -1,16 +1,16 @@
 from src.ui.main_window import MainWindow
 
-HEADER_COLS_CLOSED = 9
+HEADER_COLS_CLOSED = 10  # Updated column count
 
 
 def test_closed_trades_tab_structure(qtbot):
     win = MainWindow()
     qtbot.addWidget(win)
-    # Closed tab exists
+    # Check main tabs exist (Closed trades now integrated into Positions tab)
     names = [win.tabs.tabText(i) for i in range(win.tabs.count())]
-    assert 'Closed' in names
-    assert 'Signals' in names
-    # Header count
+    assert 'Pozisyonlar' in names or '📊 Pozisyonlar' in names  # Turkish for "Positions"
+    assert 'Sinyaller' in names  # Turkish for "Signals"
+    # Header count for closed table (still exists as subtable)
     assert win.closed_table.columnCount() == HEADER_COLS_CLOSED
 
 

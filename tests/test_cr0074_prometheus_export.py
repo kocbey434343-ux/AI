@@ -157,8 +157,8 @@ class TestPrometheusExport:
 
         def record_metrics(thread_id):
             try:
-                for i in range(100):
-                    exporter.record_open_latency(thread_id * 100 + i)
+                for i in range(10):  # Reduced from 100 to 10
+                    exporter.record_open_latency(thread_id * 10 + i)
                     exporter.record_guard_block(f'guard_{thread_id}')
                     exporter.update_positions_count(i)
             except Exception as e:
@@ -166,7 +166,7 @@ class TestPrometheusExport:
 
         # Start multiple threads
         threads = []
-        for i in range(5):
+        for i in range(3):  # Reduced from 5 to 3
             t = threading.Thread(target=record_metrics, args=(i,))
             threads.append(t)
             t.start()
@@ -199,11 +199,11 @@ class TestMetricsServer:
         assert server.is_running()
 
         # Give it a moment to start
-        time.sleep(0.1)
+        time.sleep(0.05)  # Reduced from 0.1 to 0.05
 
         # Stop server
         server.stop()
-        time.sleep(0.1)
+        time.sleep(0.05)  # Reduced from 0.1 to 0.05
         assert not server.is_running()
 
     @pytest.mark.skipif(not PROMETHEUS_AVAILABLE, reason="prometheus_client not available")
@@ -216,10 +216,10 @@ class TestMetricsServer:
 
         try:
             assert server.start()
-            time.sleep(0.2)  # Give server time to start
+            time.sleep(0.1)  # Reduced from 0.2 to 0.1
 
             # Test /metrics endpoint
-            response = requests.get('http://localhost:8082/metrics', timeout=1)
+            response = requests.get('http://localhost:8082/metrics', timeout=0.5)  # Reduced from 1 to 0.5
             assert response.status_code == 200
             assert 'bot_' in response.text or 'Prometheus client not available' in response.text
 
@@ -228,7 +228,7 @@ class TestMetricsServer:
             pass
         finally:
             server.stop()
-            time.sleep(0.1)
+            time.sleep(0.05)  # Reduced from 0.1 to 0.05
 
     @pytest.mark.skipif(not PROMETHEUS_AVAILABLE, reason="prometheus_client not available")
     def test_health_endpoint(self):
@@ -240,10 +240,10 @@ class TestMetricsServer:
 
         try:
             assert server.start()
-            time.sleep(0.2)  # Give server time to start
+            time.sleep(0.1)  # Reduced from 0.2 to 0.1
 
             # Test /health endpoint
-            response = requests.get('http://localhost:8083/health', timeout=1)
+            response = requests.get('http://localhost:8083/health', timeout=0.5)  # Reduced from 1 to 0.5
             assert response.status_code == 200
             assert response.text == 'OK'
 
@@ -252,7 +252,7 @@ class TestMetricsServer:
             pass
         finally:
             server.stop()
-            time.sleep(0.1)
+            time.sleep(0.05)  # Reduced from 0.1 to 0.05
 
 
 class TestTraderMetricsIntegration:

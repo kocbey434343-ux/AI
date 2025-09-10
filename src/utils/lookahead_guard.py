@@ -8,13 +8,15 @@ Bu modul sinyal uretiminde lookahead bias tespit eder ve engeller:
 4. Guard mekanizmasi ile riskli sinyalleri bloklar
 """
 
-import pandas as pd
 import re
 from datetime import datetime
 from typing import Optional
+
+import pandas as pd
+from config.settings import Settings
+
 from src.utils.logger import get_logger
 from src.utils.structured_log import slog
-from config.settings import Settings
 
 
 class LookaheadGuard:
@@ -211,13 +213,12 @@ class LookaheadGuard:
         try:
             if timeframe.endswith('m'):
                 return int(timeframe[:-1])
-            elif timeframe.endswith('h'):
+            if timeframe.endswith('h'):
                 return int(timeframe[:-1]) * 60
-            elif timeframe.endswith('d'):
+            if timeframe.endswith('d'):
                 return int(timeframe[:-1]) * 24 * 60
-            else:
-                # Default 1h
-                return 60
+            # Default 1h
+            return 60
         except Exception:
             return 60  # Default
 

@@ -450,16 +450,28 @@ class TestHeadlessRunnerIntegration:
                 'BACKUP_PATH': f'{temp_dir}/backup',
                 'OFFLINE_MODE': 'true'
             }):
+                # Ensure Settings module reloads with new env vars
+                import importlib
+                import config.settings
+                importlib.reload(config.settings)
+
                 runner = HeadlessRunner()
 
-                # Should validate successfully in offline mode with data
-                assert runner.validate_environment() is True
+                try:
+                    # Should validate successfully in offline mode with data
+                    assert runner.validate_environment() is True
 
-                # API connection should be marked as offline
-                runner.components_status["api_connection"] = "OFFLINE"
+                    # API connection should be marked as offline
+                    runner.components_status["api_connection"] = "OFFLINE"
 
-                health_status = runner.run_health_checks()
-                assert health_status["components"]["api_connection"]["status"] == "OFFLINE"
+                    health_status = runner.run_health_checks()
+                    assert health_status["components"]["api_connection"]["status"] == "OFFLINE"
+                finally:
+                    # Cleanup logger to release file handles
+                    if hasattr(runner, 'logger') and runner.logger:
+                        for handler in runner.logger.handlers[:]:
+                            handler.close()
+                            runner.logger.removeHandler(handler)
 
 
 class TestHeadlessRunnerCLI:

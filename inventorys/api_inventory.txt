@@ -1,0 +1,53 @@
+File: src/api/binance_api.py
+Purpose: Unified Binance spot/futures API wrapper with offline deterministic fallback.
+Key Areas:
+ - Initialization: Creates real Client unless OFFLINE_MODE; dummy client supplies minimal methods.
+ - Filter Helpers: _spot_symbol_info, _futures_symbol_info, _get_filters, _round_step; used by quantize.
+ - quantize(symbol, quantity, price): Applies LOT_SIZE & PRICE_FILTER rounding; returns (qty, px) with minQty guard (returns 0 if below minQty).
+ - Market Data: get_ticker_24hr (with offline synthetic list), get_top_pairs (filters USDT pairs & excludes stablecoin bases), get_historical_klines (offline synthetic OHLCV generator), get_historical_data(DataFrame assembly).
+ - Trading: place_order (retry with backoff, partial fill simulation in testnet), place_oco_order (spot OCO with price safety adjustments).
+ - Account/Positions: get_open_orders, get_account_info, get_asset_balance (mode aware), get_positions (futures positions simplified; spot placeholder empty list).
+ - Misc: fetch_market_data(endpoint) generic HTTP fetch with error detail & offline stub.
+Inputs: Settings (OFFLINE_MODE, RETRY params, commission/slippage flags indirectly), API keys, mode (spot/futures).
+Outputs: Dict responses mirroring Binance client or synthetic stubs.
+Edge Handling: Retries on exceptions, partial fill randomness (testnet only), offline deterministic pseudo-random series seeded by hash(symbol).
+Gaps / Improvements:
+ - get_positions spot unimplemented (consider balances + recent trades).
+ - No explicit rate limit handling beyond simple retries.
+ - Quantize duplicates rounding logic for price and qty; could generalize.
+ - Needs structured logging (slog) integration per CR-0031.
+
+File: src/api/health_check.py
+Purpose: Simple connectivity & permission health checks.
+Functions:
+ - HealthChecker.check_connection(): Measures server time call latency; flags unhealthy if >5s.
+ - check_api_permissions(): Verifies account info access and (if not testnet) attempts a small market order to detect trading permission issues; handles BinanceAPIException -2015.
+ - run_full_check(): Aggregates connection + permission; returns (bool, message).
+Inputs: Settings.USE_TESTNET, BinanceAPI wrapper.
+Outputs: Tuple (status, message strings).
+Gaps:
+ - Hardcoded latency threshold (5s) should reference Settings.
+ - Should avoid placing any order attempt on real environment (even small) without dry-run flag.
+ - ASCII policy: Contains Turkish strings; decision whether to translate or externalize.
+
+File: src/api/price_stream.py
+Purpose: Websocket miniTicker streamer with auto-reconnect & health timeouts.
+Key Features:
+ - Backoff with exponential growth (base_backoff, max_backoff) + jitter.
+ - Optional max_retries; health methods seconds_since_last_message / is_timed_out.
+ - restart(new_symbols) with locking to safely swap symbol list.
+ - Offline mode not directly integrated (relies on real WS) - potential TODO.
+Inputs: symbols list, callbacks on_price(symbol, price), on_status(state, info).
+Outputs: Callback invocations; internal thread lifecycle.
+Edge Handling: Exception swallowing inside callbacks to avoid thread crash; jitter on backoff; ping_interval/timeout set.
+Gaps / Improvements:
+ - No graceful authentication or futures stream support; only public spot stream.
+ - Mixed language log messages; unify to ASCII.
+ - Could integrate per-symbol last price cache & diff suppression.
+ - Timeout_sec default 25s; could be dynamic via Settings.
+
+Next Actions (API scope):
+ - Add structured logging events for place_order, place_oco_order, reconnect attempts (CR-0031 alignment).
+ - Externalize Turkish UI/log strings or transliterate to ASCII per policy.
+ - Implement spot get_positions or mark TODO with CR if deferred.
+ - Add unit tests for price_stream health timeout and restart logic.

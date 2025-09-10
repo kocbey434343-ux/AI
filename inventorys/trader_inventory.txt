@@ -1,0 +1,81 @@
+File: src/trader/core.py
+Purpose: Central orchestrator for trading lifecycle (signals -> guards -> execution -> trailing/partials -> metrics/anomaly -> reconciliation).
+Key Responsibilities:
+ - execute_trade(signal): Guard pipeline + open_position orchestration.
+ - process_price_update(symbol, last_price): Updates per-position last price, computes R-multiple, triggers partial exits & trailing.
+ - close_position / close_all_positions: Market exit + metrics update.
+ - start/stop: Initializes reconciliation and daily risk reset logic.
+ - unrealized_total_pnl_pct(): Aggregated weighted unrealized PnL% (partial exits weighting).
+ - Reconciliation helpers (_recon_*): Exchange vs local diff detection (orphan positions/orders, missing protection, auto-heal stub).
+ - _maybe_daily_risk_reset(): Daily flag reset & guard counters reset when date rolls.
+State Structures:
+ positions[symbol]: { side, entry_price, position_size, remaining_size, stop_loss, take_profit, atr, trade_id, scaled_out, ... }
+Dependencies: BinanceAPI, RiskManager, TradeStore, CorrelationCache, execution/trailing/metrics modules.
+Edge Handling: contextlib.suppress around DB/network, idempotent auto-heal, offline balance fallback.
+Gaps/Improvements:
+ - Structured logging events (open/close/partial/trailing) pending (CR-0031).
+ - Spot get_positions not integrated (affects reconciliation accuracy).
+ - start_balance hardcoded; could load from TradeStore or API.
+ - ASCII policy: Some Turkish comments/strings (decide keep vs transliterate).
+
+File: src/trader/execution.py
+Purpose: Position sizing, order context prep, open/close handling, partial fills, protection orders, metrics trimming.
+Main Functions:
+ - position_size(self, SizeInputs): Risk-based size + adaptive ATR scaling + score nudge + quantization.
+ - prepare_order_context(self, signal, ctx): Produces OrderContext or None after validations (correlation, max loss).
+ - open_position(self, signal, ctx): Main entry (market order, fills, protection orders, metrics append, logging).
+ - close_position(self, symbol): Market exit, DB close, metrics update.
+ - apply_partial_fill, maybe_revise_protection_orders: Partial fill state management (CR-0012) & protection qty rev.
+ - place_protection_orders: Spot OCO or futures STOP/TP placement; records IDs in position dict.
+Helpers: compute_atr, initial_levels, extract_fills, record_open, pandas_ts.
+Edge Handling: Extensive contextlib.suppress, offline mode early returns, partial fill simulation via BinanceAPI.
+Gaps:
+ - Duplicate code for calculating atr from signal appears in compute_atr and part of sizing; unify potential.
+ - Logging mix (Turkish & English) - standardize.
+ - Protection order placement for futures uses market orders with stopPrice; refine for precision.
+
+File: src/trader/guards.py
+Purpose: Pre-trade guard pipeline (halt flag, daily risk, outlier move, volume/capacity, correlation via core).
+Functions:
+ - map_signal -> maps label to side/risk_side.
+ - check_halt_flag, check_daily_risk_limits, check_outlier_bar, check_volume_capacity, correlation_ok, pre_trade_pipeline.
+Inputs: signal dict containing symbol, close_price, prev_close, volume_24h.
+Outputs: (ok, ctx) for pipeline; increments guard_counters on blocks.
+Gaps:
+ - Hardcoded Turkish messages; unify language.
+ - move_pct threshold from Settings, but format/logging could include context (prev price, threshold).
+
+File: src/trader/metrics.py
+Purpose: Metrics collection, snapshot persistence, anomaly detection (latency & slippage) with risk reduction.
+Key Functions:
+ - init_metrics, metrics_snapshot, maybe_flush_metrics.
+ - recent_latency_slippage_stats: Averages last N samples.
+ - maybe_check_anomalies -> _check_latency_anomaly / _check_slip_anomaly -> risk adjustment via _apply_risk_reduction and restore.
+ - maybe_trim_metrics: Caps list lengths (CR-0008) idempotently.
+State: recent_* lists, _anomaly_flagged dict, _original_risk_percent.
+Gaps:
+ - Anomaly thresholds static; could adapt via rolling percentiles.
+ - No structured logging for anomaly events (pending CR-0031 extension).
+
+File: src/trader/trailing.py
+Purpose: Partial exits and trailing stop logic (classic R-multiple step + stub for ATR trailing).
+Functions:
+ - init_trailing sets partial TP levels and trailing params.
+ - maybe_partial_exits: Executes scale-out when R-multiple levels reached; persists executions; sets stop_loss to entry after partials if in profit.
+ - maybe_trailing: Classic step trailing; ATR trailing code currently unreachable due to early return (intentional disable?).
+ - compute_r_multiple: Calculates current R-multiple for a position.
+Gaps / Issues:
+ - Early return prevents ATR trailing block from executing (dead code) — confirm intent or remove / add feature flag.
+ - No cooldown for classic trailing; potential rapid stop adjustments.
+ - Logging mostly at info/debug; consider structured events.
+
+Cross-Cutting Observations:
+ - Mixed Turkish strings conflict with ASCII-only source policy (decide translation strategy).
+ - Many contextlib.suppress blocks may hide logic errors; consider scoped logging with debug severity.
+ - Reconciliation auto-heal currently stub (no real re-placement logic); backlog item for protection re-creation.
+
+Next Actions (Trader scope):
+ - Decide on ATR trailing block activation vs removal (create CR if enabling).
+ - Implement structured logging integration points (open, close, partial, trailing updates, anomaly).
+ - Normalize language (ASCII) and externalize user-facing messages if needed.
+ - Add unit tests for maybe_revise_protection_orders edge cases (already partially covered) and daily risk reset path.

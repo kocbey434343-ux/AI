@@ -1,28 +1,29 @@
-import os
 import json
 import math
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
+
 import numpy as np
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from config.settings import Settings
 
 from src.data_fetcher import DataFetcher
 from src.indicators import IndicatorCalculator
-from config.settings import Settings
 from src.utils.logger import get_logger
 
-"""Backtest kalibrasyon aracı.
+"""Backtest kalibrasyon araci.
 
-Temel değişiklikler:
- - Dinamik warmup: fast modunda daha düşük bar (over-warmup sebebiyle boş skor oluşmasını engeller)
- - Fonksiyonlar warmup_bars parametresi alır (global sabite bağımlılık azaltıldı)
- - Skor üretilemezse ayrıntılı debug çıktısı döner (None yerine)
- - Yinelenen / eski kod blokları temizlendi
+Temel degisiklikler:
+ - Dinamik warmup: fast modunda daha dusuk bar (over-warmup sebebiyle bos skor olusmasini engeller)
+ - Fonksiyonlar warmup_bars parametresi alir (global sabite bagimlilik azaltildi)
+ - Skor uretilemezse ayrintili debug ciktisi doner (None yerine)
+ - Yinelenen / eski kod bloklari temizlendi
 """
 
 DEFAULT_WARMUP_BARS = 120
-FAST_WARMUP_BARS = 40  # fast kalibrasyon için azaltılmış warmup
+FAST_WARMUP_BARS = 40  # fast kalibrasyon icin azaltilmis warmup
 MAX_BARS_PER_SYMBOL = 400
 
 logger = get_logger("Calibration")
@@ -62,7 +63,7 @@ def _iter_scores(df: pd.DataFrame, indicators_full: Dict, calc: IndicatorCalcula
             adx_val = scored.get('scores', {}).get('ADX')
             try:
                 if adx_val is None or float(adx_val) < adx_min:
-                    continue  # düşük ADX ortamını dağılıma dahil etmiyoruz
+                    continue  # dusuk ADX ortamini dagilima dahil etmiyoruz
             except Exception:
                 pass
         scores.append(scored['total_score'])
@@ -76,7 +77,7 @@ def _simulate_trades(df: pd.DataFrame, indicators_full: Dict, calc: IndicatorCal
                      warmup_bars: int = DEFAULT_WARMUP_BARS,
                      adx_min: float | None = None):
     close_len = len(df)
-    # Eşikler NaN ise direkt boş sonuç dön
+    # Esikler NaN ise direkt bos sonuc don
     if any(isinstance(x, float) and math.isnan(x) for x in (buy_thr, sell_thr, buy_exit, sell_exit)):
         return {'total_trades': 0,'wins': 0,'losses': 0,'winrate': 0.0,'avg_gain_pct': 0.0,'avg_loss_pct': 0.0,'expectancy_pct': 0.0,'max_consec_losses': 0}
     if close_len <= warmup_bars + 5:
@@ -140,7 +141,7 @@ def _simulate_trades(df: pd.DataFrame, indicators_full: Dict, calc: IndicatorCal
                     consec_losses = 0
                 position = None
         if position is None:
-            # Düşük ADX ortamında yeni pozisyon açma
+            # Dusuk ADX ortaminda yeni pozisyon acma
             if adx_min is not None and adx_val is not None and adx_val < adx_min:
                 continue
             if score_val >= buy_thr:
@@ -298,10 +299,10 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
                 atr_rm = scored_last['scores'].get('ATR_RiskMult')
                 if atr_rm is not None: all_atr_risk.append(float(atr_rm))
             except Exception: pass
-            # İstatistikler
+            # Istatistikler
             sym_arr = np.array(sym_scores, dtype=float)
             symbol_stats[sym] = {
-                'count': int(len(sym_scores)),
+                'count': len(sym_scores),
                 'mean': float(np.mean(sym_arr)),
                 'std': float(np.std(sym_arr)),
                 'p25': float(np.percentile(sym_arr,25)),
@@ -312,7 +313,7 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
         except Exception as e:
             logger.error(f"{sym} kalibrasyon hata: {e}")
     if not all_scores:
-        logger.error("Hiç skor üretilemedi")
+        logger.error("Hic skor uretilemedi")
         debug = {
             'error': 'no_scores',
             'pairs_checked': len(pairs),
@@ -324,7 +325,7 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
         if verbose:
             logger.error(json.dumps(debug, indent=2, ensure_ascii=False))
         return debug
-    # Global NaN filtreleme (her ihtimale karşı)
+    # Global NaN filtreleme (her ihtimale karsi)
     cleaned = [s for s in all_scores if not (isinstance(s,float) and math.isnan(s))]
     if not cleaned:
         debug = {'error': 'only_nan_scores', 'pairs_with_scores': len(symbol_stats), 'warmup_bars': warmup_bars}
@@ -340,8 +341,8 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
     if buy_exit_suggest >= suggested_buy: buy_exit_suggest = suggested_buy - 1
     if sell_exit_suggest <= suggested_sell: sell_exit_suggest = suggested_sell + 1
 
-    overrides_used = False  # Manuel dışarıdan parametre verildiyse
-    persisted_thresholds_loaded = False  # threshold_overrides.json'dan yüklendiyse
+    overrides_used = False  # Manuel disaridan parametre verildiyse
+    persisted_thresholds_loaded = False  # threshold_overrides.json'dan yuklendiyse
     if buy_threshold is not None and sell_threshold is not None:
         overrides_used = True
         # Use provided thresholds
@@ -366,7 +367,7 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
     if all_atr_risk:
         atr_np = np.array(all_atr_risk)
         atr_risk_percentiles = {p: float(np.percentile(atr_np,p)) for p in [5,25,50,75,95]}
-    # Persist edilmiş eşikleri (threshold_overrides.json) baseline olarak kullan (manuel override yoksa)
+    # Persist edilmis esikleri (threshold_overrides.json) baseline olarak kullan (manuel override yoksa)
     persisted_path = os.path.join(Settings.DATA_PATH, 'processed', 'threshold_overrides.json')
     if use_persisted and not overrides_used and os.path.exists(persisted_path):
         try:
@@ -380,10 +381,10 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
                 sell_exit_suggest = float(persisted['sell_exit'])
                 persisted_thresholds_loaded = True
                 if verbose:
-                    logger.info(f"Persist edilmiş eşikler yüklendi (baseline olarak): {persisted}")
+                    logger.info(f"Persist edilmis esikler yuklendi (baseline olarak): {persisted}")
         except Exception as e:
             if verbose:
-                logger.warning(f"Persist edilmiş eşikler okunamadı: {e}")
+                logger.warning(f"Persist edilmis esikler okunamadi: {e}")
 
     global_trades = []
     global_wins = global_losses = 0
@@ -438,7 +439,7 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
             with open(cand_path,'w',encoding='utf-8') as f: json.dump(optimization_candidates,f,indent=2,ensure_ascii=False)
         except Exception: pass
     applied_thresholds: dict | None = None
-    # Eğer apply_best istenir ve optimize sonuçları var ise (ve override verilmemişse) ilk non-baseline adayı uygula
+    # Eger apply_best istenir ve optimize sonuclari var ise (ve override verilmemisse) ilk non-baseline adayi uygula
     if apply_best and not overrides_used:
         best_candidate = None
         if optimization_candidates:
@@ -458,9 +459,8 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
                 'sell_exit': sell_exit_suggest,
                 'source': 'best_candidate'
             }
-        else:
-            if verbose:
-                logger.warning("apply_best istendi fakat baseline dışı alternatif aday bulunamadı (tüm kombinasyonlar baseline ile aynı olabilir / filtreler eliyor). Winrate değişmemesi normal.")
+        elif verbose:
+            logger.warning("apply_best istendi fakat baseline disi alternatif aday bulunamadi (tum kombinasyonlar baseline ile ayni olabilir / filtreler eliyor). Winrate degismemesi normal.")
     if overrides_used and not applied_thresholds:
         applied_thresholds = {
             'buy': suggested_buy,
@@ -475,7 +475,7 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
         'fast': fast,
         'warmup_bars': warmup_bars,
         'pairs_used': len(symbol_stats),
-        'total_points': int(len(all_scores)),
+        'total_points': len(all_scores),
     'threshold_overrides_used': overrides_used,
     'persisted_thresholds_loaded': persisted_thresholds_loaded,
         'overrides': {
@@ -523,9 +523,9 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
         try:
             with open(out_path,'w',encoding='utf-8') as f: json.dump(summary,f,indent=2,ensure_ascii=False)
             logger.info(f"Kalibrasyon kaydedildi: {out_path}")
-        except Exception as e: logger.error(f"Kalibrasyon dosyası yazılamadı: {e}")
+        except Exception as e: logger.error(f"Kalibrasyon dosyasi yazilamadi: {e}")
 
-    # Seçilen eşikleri persist etmek için ayrı bir dosya yaz (settings.py yeniden yükleme ile devreye girecek)
+    # Secilen esikleri persist etmek icin ayri bir dosya yaz (settings.py yeniden yukleme ile devreye girecek)
     if applied_thresholds or (overrides_used and apply_best):
         try:
             th = applied_thresholds or {
@@ -541,21 +541,21 @@ def run_calibration(pairs_limit: int = 40, save: bool = True, fast: bool = False
             with open(th_path,'w',encoding='utf-8') as f:
                 json.dump(th, f, indent=2, ensure_ascii=False)
             if verbose:
-                logger.info(f"Threshold overrides yazıldı: {th_path}")
+                logger.info(f"Threshold overrides yazildi: {th_path}")
         except Exception as e:
-            logger.error(f"Threshold overrides yazılamadı: {e}")
+            logger.error(f"Threshold overrides yazilamadi: {e}")
     return summary
 
 def run_threshold_evaluation(buy: float, sell: float, buy_exit: float | None = None, sell_exit: float | None = None,
                              pairs_limit: int = 40, fast: bool = False, verbose: bool = False) -> dict:
-    """Sadece verilen eşiklerle hızlı değerlendirme döndürür (optimizasyon yapmaz)."""
+    """Sadece verilen esiklerle hizli degerlendirme dondurur (optimizasyon yapmaz)."""
     return run_calibration(pairs_limit=pairs_limit, save=False, fast=fast, verbose=verbose,
                            buy_threshold=buy, sell_threshold=sell,
                            buy_exit_threshold=buy_exit, sell_exit_threshold=sell_exit,
                            skip_optimize=True)
 
 if __name__ == "__main__":
-    # Örnek: override eşik ile çalıştır
+    # Ornek: override esik ile calistir
     out = run_threshold_evaluation(50.19, 16.66, 45.19, 21.66, pairs_limit=30, fast=False, verbose=True)
     if out and 'error' not in out:
         print(json.dumps(out['global']['trade_stats'], indent=2, ensure_ascii=False))

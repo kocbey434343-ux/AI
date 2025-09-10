@@ -1,0 +1,83 @@
+Config Modules & Files Inventory (Generated 2025-08-24)
+=======================================================
+Scope: settings, runtime thresholds/costs persistence, indicators config JSON.
+
+1. settings.py
+--------------
+Purpose: Centralized application settings sourced from environment variables (.env) with defaults and some runtime mutability.
+Key Responsibilities:
+ - Load environment (.env via python-dotenv) and derive typed constants.
+ - Handle OFFLINE_MODE auto logic (true / auto / false) based on API key presence.
+ - Provide risk, signal thresholds, correlation, retry, trailing, metrics, WS, UI toggles.
+ - Expose RuntimeConfig class for mutable MARKET_MODE.
+Inputs: Environment variables (BINANCE_API_KEY, DEFAULT_RISK_PERCENT, etc.).
+Outputs: Class attributes (Settings.*) used across modules.
+Important Fields:
+ - BUY/SELL thresholds + hysteresis (BUY_EXIT_THRESHOLD, SELL_EXIT_THRESHOLD).
+ - Commission & slippage stored as percent numbers (0.04 = 0.04%).
+ - Adaptive risk sizing params (ADAPTIVE_RISK_*).
+ - Websocket backoff/timeouts.
+Edge Handling: OFFLINE_MODE auto-detection, safe casting with defaults.
+Gaps / Improvements:
+ - Central validation routine to assert invariants (e.g., BUY_EXIT < BUY, SELL_EXIT > SELL) beyond runtime loaders.
+ - Consider converting to Pydantic BaseSettings for validation & type safety.
+ - Commission/slippage naming could be clarified as bps vs percent.
+
+2. runtime_thresholds.py
+------------------------
+Purpose: Persist & reload dynamic signal thresholds (buy/sell + optional exit hysteresis) with sanity validation.
+Functions:
+ - load_runtime_thresholds(): Reads JSON, validates via _is_sane, mutates Settings.* thresholds.
+ - persist_runtime_thresholds(buy, sell, buy_exit?, sell_exit?, source): Writes JSON with timestamp & source.
+ - _is_sane: Validates ranges, min gap, hysteresis deltas.
+Inputs: config/runtime_thresholds.json file.
+Outputs: Updated Settings thresholds; JSON file.
+Sanity Rules: min_gap, min/max for buy & sell, hysteresis deltas.
+Gaps / Improvements:
+ - Add explicit JSON schema versioning field.
+ - Introduce rollback (keep previous file as .bak).
+ - Structured logging event names for downstream audit (slog usage optional).
+
+3. runtime_costs.py
+-------------------
+Purpose: Persist & reload trading cost assumptions (commission, slippage, next-bar fill flag).
+Functions:
+ - load_runtime_costs(): Mutates Settings from JSON.
+ - persist_runtime_costs(): Serialize current cost settings.
+Inputs: config/runtime_costs.json.
+Outputs: Updated Settings cost fields; JSON snapshot.
+Gaps / Improvements:
+ - Add sanity bounds (e.g., commission not >1%).
+ - Include spread basis points and dynamic slippage mult in persisted payload.
+ - Track history (append log) for audit.
+
+4. indicators.json
+------------------
+Purpose: Declarative indicator configuration driving IndicatorCalculator.
+Structure:
+ - List of indicator objects: name, params, buy_threshold, sell_threshold.
+ - Contains RSI, MACD, Bollinger, Stochastic, Williams %R, CCI, ATR, EMA, ADX with typical periods.
+Usage: Read by indicators.py to compute features and scoring (some thresholds mainly informational).
+Gaps / Improvements:
+ - Missing weighting info (weights handled elsewhere or default?).
+ - Could add an id/version field for migration.
+ - Provide enable/disable flags per indicator to facilitate A/B testing.
+
+Cross-File Relationships
+------------------------
+ - Settings.INDICATORS_CONFIG points to indicators.json (path used by IndicatorCalculator).
+ - runtime_thresholds & runtime_costs mutate Settings at runtime (hot configuration without restart).
+ - Trading & signal modules rely on updated Settings values post-load.
+
+Risk / Validation Considerations
+--------------------------------
+ - Unsane thresholds or costs could degrade strategy performance; sanitation rules exist only for thresholds.
+ - Missing .env leads to OFFLINE_MODE auto enabling (intended for development); document clearly to avoid production misconfiguration.
+
+Recommended Next Actions
+------------------------
+ - Add config_inventory rev tracking header (increment on edits) for audit trail.
+ - Implement schema versioning in JSON persisted files (thresholds, costs).
+ - Provide a config.validate() call invoked early in main to assert invariants & log warnings.
+
+End of config_inventory.txt

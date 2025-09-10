@@ -1,9 +1,9 @@
-import threading
 import json
-import websocket
-import time
 import random
-from typing import Callable, Dict, Optional
+import threading
+import time
+from typing import Callable, Optional
+
 from src.utils.logger import get_logger
 
 
@@ -62,7 +62,7 @@ class PriceStreamManager:
             pass
 
     def _on_close(self, *_):
-        self.logger.info("Websocket kapandı")
+        self.logger.info("Websocket kapandi")
         try:
             if self.on_status:
                 self.on_status("closed", None)
@@ -70,7 +70,7 @@ class PriceStreamManager:
             pass
 
     def _on_open(self, *_):
-            self.logger.info("Websocket açıldı")
+            self.logger.info("Websocket acildi")
             try:
                 if self.on_status:
                     self.on_status("open", None)
@@ -84,7 +84,7 @@ class PriceStreamManager:
         import websocket as _ws
         while not self._stop.is_set():
             url = self._build_url()
-            self.logger.info(f"WS bağlanıyor: {url}")
+            self.logger.info(f"WS baglaniyor: {url}")
             try:
                 if self.on_status:
                     self.on_status("connecting", None)
@@ -104,12 +104,12 @@ class PriceStreamManager:
                         self.on_status("error", str(e))
                 except Exception:
                     pass
-            # Bağlantı koptu veya çıkıldı
+            # Baglanti koptu veya cikildi
             if self._stop.is_set():
                 break
             self._attempt += 1
             if self.max_retries is not None and self._attempt > self.max_retries:
-                self.logger.error("Maksimum WS yeniden bağlanma denemesi aşıldı; durduruluyor")
+                self.logger.error("Maksimum WS yeniden baglanma denemesi asildi; durduruluyor")
                 try:
                     if self.on_status:
                         self.on_status("stopped", "max_retries")
@@ -147,8 +147,8 @@ class PriceStreamManager:
             self.thread.join(timeout=5)
             if self.thread.is_alive():
                 self.logger.warning("WS thread join timeout; thread hala yasiyor - zorla durdurma gerekebilir")
-                # Force termination sonrası yeniden başlatmayı main thread'e bırak
-                # Thread içindeki ws.close() timeout'tan sonra çalışması bekleniyor
+                # Force termination sonrasi yeniden baslatmayi main thread'e birak
+                # Thread icindeki ws.close() timeout'tan sonra calismasi bekleniyor
         self.thread = None
         try:
             if self.on_status:
@@ -166,7 +166,7 @@ class PriceStreamManager:
         return self.seconds_since_last_message() > self.timeout_sec
 
     def restart(self, new_symbols: Optional[list[str]] = None):
-        """Dışarıdan kontrollü restart (health check için)."""
+        """Disaridan kontrollu restart (health check icin)."""
         with self._lock:
             if new_symbols is not None:
                 self.symbols = [s.lower() for s in new_symbols]

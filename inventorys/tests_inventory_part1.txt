@@ -1,0 +1,46 @@
+Tests Inventory (Part 1) Generated 2025-08-24
+===========================================
+Scope: Core trading, reconciliation, sizing, anomaly, metrics, trailing, UI smoke, utilities.
+
+Global Test Harness
+-------------------
+conftest.py
+ - Captures per-test report data, writes JSON summary (test_output_summary.json) at session end.
+ - Data fields: nodeid, outcome, duration, longrepr.
+ - Provides basis for CI artifact or flaky test analysis.
+
+Trader Flow & Guards
+--------------------
+test_trader_flow.py
+ - test_trade_open_partial_exit_trailing_and_close: End-to-end open -> partial exit (R=1) -> trailing activation (R>1.2) -> close_all.
+ - test_halt_flag_blocks_new_trades: Ensures DAILY_HALT_FLAG prevents new trade.
+
+Reconciliation
+--------------
+test_reconciliation.py
+ - Constructs synthetic local positions & mocked exchange state.
+ - Validates _reconcile_open_orders summary keys: orphan_exchange_position, orphan_local_position, missing_stop_tp.
+ - Captures RECON: log messages via custom handler.
+
+Position Sizing (Adaptive ATR)
+------------------------------
+test_position_size_adaptive.py
+ - Verifies adaptive size scaling: low ATR -> near max mult; high ATR -> near min mult.
+ - Confirms score (total_score=100) boosts size (~1.44x vs neutral).
+ - Compares actual to theoretical expectations with tolerance.
+
+(Additional tests to be documented in Part 2...)
+
+Observations / Gaps (Early)
+---------------------------
+ - Need inventory continuation (metrics, anomaly, trailing persistence, UI, websocket, secret_scan, tag creation, etc.).
+ - Potential missing negative tests (e.g., malformed signal dict, invalid thresholds) not present yet.
+ - Consider grouping long-running calibration/backtest tests under marker to allow smoke segregation.
+
+Next Actions
+------------
+ - Generate Part 2 & 3 inventories covering remaining test files.
+ - Derive coverage strategy mapping (test file -> module features).
+ - Identify untested code paths (e.g., ATR trailing disabled branch, order_state FSM unused).
+
+End of tests_inventory_part1.txt

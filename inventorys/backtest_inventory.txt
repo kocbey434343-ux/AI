@@ -1,0 +1,54 @@
+File: src/backtest/orchestrator.py
+Status: EMPTY
+Summary: Placeholder orchestrator module; no implementation yet. Needed for CR-0028 acceptance (orchestrator skeleton). Should define BacktestOrchestrator class with run(parameters) stub and minimal logging.
+
+File: src/backtest/calibrate.py
+Purpose: Backtest calibration tool to derive optimal buy/sell and exit thresholds from historical pair data.
+Key Functions:
+ - run_calibration(...): Main calibration routine; loads top pairs, computes indicator scores per symbol, aggregates global score distribution, suggests thresholds, optionally optimizes threshold combinations and persists results.
+ - run_threshold_evaluation(...): Convenience wrapper calling run_calibration with fixed thresholds (no optimization) for quick evaluation.
+ - _simulate_trades(...): Simulates trade entries/exits over a dataframe using score thresholds; returns trade statistics including costs adjustments.
+ - _optimize_thresholds(...): Brute-force limited grid search over candidate threshold combinations evaluating multi-symbol aggregated performance.
+ - _iter_scores(...): Iteratively builds scores per bar after warmup for distribution analysis; supports ADX filtering.
+ - _simulate_for_symbol(...): Helper to run simulation for a single symbol (thread pool usage).
+Supporting Helpers: _slice_recent, _build_indicator_frames.
+Inputs:
+ - Historical OHLCV data via DataFetcher.get_pair_data(symbol, timeframe)
+ - IndicatorCalculator for indicator/score computation
+ - Settings (commission, slippage, use_next_bar_fill, timeframe, parallel workers, ADX_MIN_THRESHOLD)
+Outputs:
+ - summary dict persisted to data/processed/calibration.json (unless save=False)
+ - optional threshold_overrides.json (applied thresholds) and optimization_candidates.json
+ - summary structure includes global distribution stats, suggested thresholds, applied thresholds, optimization candidates, per-symbol stats, trade stats, ADX/ATR risk percentiles.
+Notable Parameters:
+ - fast mode reduces warmup bars and symbol subset; skip_optimize disables threshold search; apply_best applies first non-baseline optimized candidate.
+ - Overrides (buy_threshold etc.) allow manual threshold injection; persisted previous overrides can seed baseline.
+Edge Cases/Guards:
+ - Handles missing/NaN thresholds, insufficient bars, missing columns, all-NaN scores, empty trades.
+ - ADX min filtering to exclude low trend strength periods from position entries.
+Costs Handling:
+ - Commission & slippage modeled as symmetric per side; expectancy after costs and winrate_after_costs computed.
+Concurrency:
+ - ThreadPoolExecutor for per-symbol simulation during optimization phase.
+Persistence:
+ - Writes JSON with ensure_ascii=False (Unicode allowed) to preserve any localization.
+Potential Improvements:
+ - Add unit tests for calibration summary structure & optimization candidate selection.
+ - Expose CLI arguments mapping to function params.
+ - Factor duplicate code blocks (indicator subsetting) into a reusable helper.
+
+File: src/backtest/calibrate_new.py
+Purpose: Thin re-export (temporary clean version). Provides run_calibration import pathway under alternative module name.
+Dependencies: from backtest.calibrate import run_calibration (relative import may be incorrect—should likely be from src.backtest.calibrate or .calibrate depending on package context).
+Note: Review import consistency during orchestrator skeleton implementation.
+
+Gaps Identified:
+ - orchestrator.py missing implementation (CR-0028 AC2 requires skeleton with run(parameters) stub and test).
+ - No dedicated tests for backtest calibration functions present yet (test_backtest_skeleton.py expected?).
+ - calibrate_new.py import path possibly inconsistent with package layout (should align with other src imports).
+
+Next Actions:
+ - Implement BacktestOrchestrator skeleton (class with run(self, params: dict) -> dict placeholder returning {'status':'ok','received':params}).
+ - Create test_backtest_skeleton.py verifying orchestrator.run basic contract.
+ - Adjust import in calibrate_new.py to use relative (from .calibrate import run_calibration) for package safety.
+ - Add CR-0028 entries to SSoT if not already (status proposed to in-progress once skeleton added).

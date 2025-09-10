@@ -1,0 +1,44 @@
+{
+  "session_id": "global_test_20250906_041500",
+  "start_time": "2025-09-06T04:15:00.397784+00:00",
+  "config_hash": "global_test_hash",
+  "decisions": [
+    {
+      "timestamp": "2025-09-06T04:15:00.397784+00:00",
+      "symbol": "BTCUSDT",
+      "signal": {
+        "score": 0.9,
+        "trend": "bullish"
+      },
+      "decision": "OPEN",
+      "reason": "Global function test",
+      "context": {
+        "price": 45000.0
+      },
+      "outcome": null
+    },
+    {
+      "timestamp": "2025-09-06T04:15:00.397784+00:00",
+      "symbol": "ETHUSDT",
+      "signal": {
+        "score": 0.2
+      },
+      "decision": "SKIP",
+      "reason": "Weak signal",
+      "context": {},
+      "outcome": {
+        "action": "no_action"
+      }
+    }
+  ],
+  "metadata": {
+    "created_by": "ReplayManager",
+    "version": "1.0",
+    "end_time": "2025-09-06T04:15:00.397784+00:00",
+    "total_decisions": 2,
+    "decision_types": {
+      "OPEN": 1,
+      "SKIP": 1
+    }
+  }
+}

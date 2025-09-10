@@ -8,8 +8,8 @@ from typing import Optional
 from src.utils.logger import get_logger
 
 try:
-    from src.utils.prometheus_export import get_exporter_instance
     from src.utils.metrics_server import start_metrics_server, stop_metrics_server
+    from src.utils.prometheus_export import get_exporter_instance
     METRICS_AVAILABLE = True
 except ImportError:
     METRICS_AVAILABLE = False

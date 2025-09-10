@@ -19,6 +19,7 @@ def test_cr0014_unrealized_total_pnl_empty(tmp_path, monkeypatch):
 def test_cr0014_unrealized_single_long(tmp_path, monkeypatch):
     t = _mk(str(tmp_path/ 'unreal2.db'))
     t.risk_manager.max_positions = 100
+    t.partial_enabled = False  # Disable partial exits for full PnL test
     # stubs
     monkeypatch.setattr(t.api, 'quantize', lambda s,q,p: (q,p))
     monkeypatch.setattr(t.api, 'place_order', lambda **k: {'price':100.0,'fills':[{'price':100.0,'qty':k['quantity']}], 'orderId':1})

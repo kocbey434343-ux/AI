@@ -4,6 +4,7 @@ Separated so tests can import without pulling heavy PyQt MainWindow.
 """
 from __future__ import annotations
 
+
 def format_total_unreal_label(total_unreal: float, pct: float) -> tuple[str, str]:
     """Return (text, color) for total unrealized pnl label.
 

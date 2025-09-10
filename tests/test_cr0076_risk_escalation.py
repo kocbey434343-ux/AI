@@ -25,10 +25,19 @@ class TestRiskEscalation:
 
     def setup_method(self):
         """Setup for each test."""
+        # Ensure no halt flag exists at start of test
+        halt_flag_path = Path(Settings.DAILY_HALT_FLAG_PATH)
+        if halt_flag_path.exists():
+            halt_flag_path.unlink()
+
         self.mock_trader = Mock()
         self.mock_trader.logger = Mock()
-        self.mock_trader.risk_manager = Mock()
-        self.mock_trader.risk_manager.risk_percent = 2.0
+
+        # Create a proper mock object that tracks attribute changes
+        self.mock_risk_manager = Mock()
+        self.mock_risk_manager.risk_percent = 2.0
+        self.mock_trader.risk_manager = self.mock_risk_manager
+
         self.mock_trader.trade_store = Mock()
         self.mock_trader.trade_store.guard_events = Mock()
 
@@ -131,16 +140,31 @@ class TestRiskEscalation:
     def test_risk_reduction_warning(self):
         """Test WARNING level applies risk reduction."""
         original_risk = 2.0
-        self.mock_trader.risk_manager.risk_percent = original_risk
+
+        # Create a real-like object that tracks attribute assignments
+        class MockRiskManager:
+            def __init__(self):
+                self.risk_percent = original_risk
+
+        self.mock_trader.risk_manager = MockRiskManager()
         self.mock_trader.trade_store.daily_realized_pnl_pct.return_value = -2.1  # WARNING
         self.mock_trader.trade_store.consecutive_losses.return_value = 0
 
-        self.escalation.evaluate_risk_level()
+        # Override Settings to ensure expected threshold and recreate escalation
+        with patch.object(Settings, 'MAX_DAILY_LOSS_PCT', 3.0):
+            # Recreate escalation with patched settings
+            escalation = RiskEscalation(self.mock_trader)
 
-        # Check risk was reduced
-        expected_risk = original_risk * Settings.ANOMALY_RISK_MULT
-        assert self.mock_trader.risk_manager.risk_percent == expected_risk
-        assert self.escalation._original_risk_percent == original_risk
+            level = escalation.evaluate_risk_level()
+
+            # Check that WARNING level was triggered
+            assert level == RiskLevel.WARNING
+            assert "daily_loss_warning" in escalation.escalation_reasons
+
+            # Check risk was reduced
+            expected_risk = original_risk * Settings.ANOMALY_RISK_MULT
+            assert abs(self.mock_trader.risk_manager.risk_percent - expected_risk) < 0.001
+            assert abs(escalation._original_risk_percent - original_risk) < 0.001
 
     def test_risk_halt_critical(self):
         """Test CRITICAL level creates halt flag."""
@@ -163,7 +187,7 @@ class TestRiskEscalation:
             expected_risk = (
                 self.escalation._original_risk_percent or 2.0
             ) * Settings.ANOMALY_RISK_MULT * 0.5
-            assert self.mock_trader.risk_manager.risk_percent == expected_risk
+            assert abs(self.mock_trader.risk_manager.risk_percent - expected_risk) < 0.001
 
         # Cleanup
         Path(halt_path).unlink(missing_ok=True)
@@ -172,20 +196,23 @@ class TestRiskEscalation:
         """Test recovery to NORMAL restores risk."""
         # First escalate to WARNING
         original_risk = 2.0
-        self.mock_trader.risk_manager.risk_percent = original_risk
-        self.mock_trader.trade_store.daily_realized_pnl_pct.return_value = -2.1
-        self.mock_trader.trade_store.consecutive_losses.return_value = 0
 
-        self.escalation.evaluate_risk_level()
-        assert self.escalation.current_level == RiskLevel.WARNING
+        with patch.object(Settings, 'MAX_DAILY_LOSS_PCT', 3.0):
+            self.escalation = RiskEscalation(self.mock_trader)
+            self.mock_trader.risk_manager.risk_percent = original_risk
+            self.mock_trader.trade_store.daily_realized_pnl_pct.return_value = -2.1
+            self.mock_trader.trade_store.consecutive_losses.return_value = 0
 
-        # Then recover to NORMAL
-        self.mock_trader.trade_store.daily_realized_pnl_pct.return_value = 0.0
+            self.escalation.evaluate_risk_level()
+            assert self.escalation.current_level == RiskLevel.WARNING
 
-        level = self.escalation.evaluate_risk_level()
-        assert level == RiskLevel.NORMAL
-        assert self.mock_trader.risk_manager.risk_percent == original_risk
-        assert self.escalation._original_risk_percent is None
+            # Then recover to NORMAL
+            self.mock_trader.trade_store.daily_realized_pnl_pct.return_value = 0.0
+
+            level = self.escalation.evaluate_risk_level()
+            assert level == RiskLevel.NORMAL
+            assert abs(self.mock_trader.risk_manager.risk_percent - original_risk) < 0.001
+            assert self.escalation._original_risk_percent is None
 
     def test_force_escalation(self):
         """Test manual force escalation."""

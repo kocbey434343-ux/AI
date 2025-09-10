@@ -50,19 +50,19 @@ class Settings:
     LOG_PATH = os.getenv("LOG_PATH", "./data/logs")
     BACKUP_PATH = os.getenv("BACKUP_PATH", "./backup")
 
-    # Risk
-    DEFAULT_RISK_PERCENT = float(os.getenv("DEFAULT_RISK_PERCENT", "1.0"))  # safer default 1%
+    # Risk - Personal use optimization: more conservative settings
+    DEFAULT_RISK_PERCENT = float(os.getenv("DEFAULT_RISK_PERCENT", "0.75"))  # Personal use: 1.0% → 0.75% (extra safety)
     DEFAULT_LEVERAGE = int(os.getenv("DEFAULT_LEVERAGE", "3"))
-    DEFAULT_MAX_POSITIONS = int(os.getenv("DEFAULT_MAX_POSITIONS", "3"))
+    DEFAULT_MAX_POSITIONS = int(os.getenv("DEFAULT_MAX_POSITIONS", "2"))  # Personal use: 3 → 2 (better focus)
     DEFAULT_MIN_VOLUME = float(os.getenv("DEFAULT_MIN_VOLUME", "50000"))
 
-    # Signals
-    # Thresholds (optimized candidate)
-    BUY_SIGNAL_THRESHOLD: float = 50  # formerly 80
-    SELL_SIGNAL_THRESHOLD: float = 17  # formerly 40
-    # Histerezis (flip-flop engelleme) - optimize adaya gore ayarlandi
-    BUY_EXIT_THRESHOLD: float = 45    # formerly 75 (BUY-5 mantigi)
-    SELL_EXIT_THRESHOLD: float = 22   # formerly 45 (SELL+5 mantigi)
+    # Signals - Personal use optimization: fine-tuned for personal trading style
+    # Thresholds (personal use optimized)
+    BUY_SIGNAL_THRESHOLD: float = 45  # Personal use: 50 → 45 (slightly more signals)
+    SELL_SIGNAL_THRESHOLD: float = 20  # Personal use: 17 → 20 (more conservative exits)
+    # Histerezis (flip-flop engelleme) - personal use optimization
+    BUY_EXIT_THRESHOLD: float = 40    # Personal use: 45 → 40 (BUY-5 logic maintained)
+    SELL_EXIT_THRESHOLD: float = 25   # Personal use: 22 → 25 (SELL+5 logic maintained)
     # Regime filter (ADX minimum) - dusuk trend donemlerinde sinyal baskilama
     ADX_MIN_THRESHOLD = 25
 
@@ -93,9 +93,9 @@ class Settings:
     SPREAD_BASIS_POINTS = float(os.getenv("SPREAD_BASIS_POINTS", "0.0"))
     TRADES_DB_PATH = os.getenv("TRADES_DB_PATH", "./data/trades.db")
 
-    # Daily risk guardrails
-    MAX_DAILY_LOSS_PCT = float(os.getenv("MAX_DAILY_LOSS_PCT", "3.0"))
-    MAX_CONSECUTIVE_LOSSES = int(os.getenv("MAX_CONSECUTIVE_LOSSES", "4"))
+    # Daily risk guardrails - Personal use: tighter controls
+    MAX_DAILY_LOSS_PCT = float(os.getenv("MAX_DAILY_LOSS_PCT", "2.0"))  # Personal use: 3.0% → 2.0% (tighter control)
+    MAX_CONSECUTIVE_LOSSES = int(os.getenv("MAX_CONSECUTIVE_LOSSES", "3"))  # Personal use: 4 → 3 (faster halt)
     DAILY_HALT_FLAG_PATH = os.getenv("DAILY_HALT_FLAG_PATH", "./data/daily_halt.flag")
     # Outlier & param set
     OUTLIER_RETURN_THRESHOLD_PCT = float(os.getenv("OUTLIER_RETURN_THRESHOLD_PCT", "5.0"))
@@ -149,9 +149,9 @@ class Settings:
     ADAPTIVE_RISK_MIN_MULT = float(os.getenv("ADAPTIVE_RISK_MIN_MULT", "0.5"))
     ADAPTIVE_RISK_MAX_MULT = float(os.getenv("ADAPTIVE_RISK_MAX_MULT", "1.25"))
 
-    # Backtest / Calibration behaviour
+    # Backtest / Calibration behaviour - Personal use: performance optimized
     USE_NEXT_BAR_FILL = os.getenv("USE_NEXT_BAR_FILL", "false").lower() == "true"
-    CALIB_PARALLEL_WORKERS = int(os.getenv("CALIB_PARALLEL_WORKERS", "4"))
+    CALIB_PARALLEL_WORKERS = int(os.getenv("CALIB_PARALLEL_WORKERS", "2"))  # Personal use: 4 → 2 (resource friendly)
 
     # Indicators
     INDICATORS_CONFIG = "config/indicators.json"
@@ -159,20 +159,20 @@ class Settings:
     # Other
     BACKTEST_DAYS = 30
     TIMEFRAME = "1h"
-    TOP_PAIRS_COUNT = 150
-    # Gecici analiz limiti (gelistirme icin). 0 veya None ise tum TOP_PAIRS_COUNT kullanilir.
-    ANALYSIS_PAIRS_LIMIT = int(os.getenv("ANALYSIS_PAIRS_LIMIT", "3"))  # dev limit; prod icin 0
+    TOP_PAIRS_COUNT = 50  # Personal use optimization: 150 → 50 (better performance)
+    # Personal use optimization: slightly more pairs but still manageable
+    ANALYSIS_PAIRS_LIMIT = int(os.getenv("ANALYSIS_PAIRS_LIMIT", "5"))  # Personal use: 3 → 5
     CONNECTION_TIMEOUT = 30  # seconds
-    # Websocket stream config
+    # Websocket stream config - Personal use: optimized intervals
     WS_BASE_BACKOFF_SEC = float(os.getenv("WS_BASE_BACKOFF_SEC", "2.0"))
     WS_MAX_BACKOFF_SEC = float(os.getenv("WS_MAX_BACKOFF_SEC", "60.0"))
     WS_TIMEOUT_SEC = float(os.getenv("WS_TIMEOUT_SEC", "25.0"))
     WS_MAX_RETRIES = os.getenv("WS_MAX_RETRIES")
     WS_MAX_RETRIES = int(WS_MAX_RETRIES) if (WS_MAX_RETRIES is not None and WS_MAX_RETRIES.strip() != "") else None
     WS_HEALTH_INTERVAL_MS = int(os.getenv("WS_HEALTH_INTERVAL_MS", "10000"))
-    # WS dynamic symbol management
+    # WS dynamic symbol management - Personal use: reduced symbol limit
     WS_REFRESH_DEBOUNCE_SEC = float(os.getenv("WS_REFRESH_DEBOUNCE_SEC", "2.0"))
-    WS_SYMBOL_LIMIT = int(os.getenv("WS_SYMBOL_LIMIT", "40"))
+    WS_SYMBOL_LIMIT = int(os.getenv("WS_SYMBOL_LIMIT", "25"))  # Personal use: 40 → 25 (performance boost)
     # UI toggles
     SHOW_UNREALIZED_TOTAL = os.getenv("SHOW_UNREALIZED_TOTAL", "true").lower() == "true"
 
@@ -198,6 +198,43 @@ class Settings:
     CLOCK_SKEW_WARN_MS = float(os.getenv("CLOCK_SKEW_WARN_MS", "500"))
     CLOCK_SKEW_GUARD_ENABLED = os.getenv("CLOCK_SKEW_GUARD_ENABLED", "true").lower() == "true"
 
+    # --- RBP-LS v1.3.1 PoR: Geriye uyumlu konfig genislemeleri ---
+    # Strateji surum bilgisi (telemetri/determinism icin bilgi amacli)
+    STRATEGY_VERSION = os.getenv("STRATEGY_VERSION", "RBP-LS-1.3.1")
+    # HTF EMA filtresi (kapali baslar; davranis degisikligi yok)
+    HTF_FILTER_ENABLED = os.getenv("HTF_FILTER_ENABLED", "false").lower() == "true"
+    HTF_EMA_TIMEFRAME = os.getenv("HTF_EMA_TIMEFRAME", "4h")
+    HTF_EMA_LENGTH = int(os.getenv("HTF_EMA_LENGTH", "200"))
+    # Giris modlari (mevcut sinyallerle uyumlu; her ikisi acik kalir)
+    ENABLE_BREAKOUT = os.getenv("ENABLE_BREAKOUT", "true").lower() == "true"
+    ENABLE_PULLBACK = os.getenv("ENABLE_PULLBACK", "true").lower() == "true"
+    # Hedef RR (mevcut RiskManager default'unu bozmaz; 2.2 korunur)
+    DEFAULT_TAKE_PROFIT_RR = float(os.getenv("DEFAULT_TAKE_PROFIT_RR", "2.2"))
+    # Zaman durdurma (kapali baslar)
+    TIME_STOP_ENABLED = os.getenv("TIME_STOP_ENABLED", "false").lower() == "true"
+    TIME_STOP_BARS = int(os.getenv("TIME_STOP_BARS", "24"))
+    # Spread guard (kapali baslar)
+    SPREAD_GUARD_ENABLED = os.getenv("SPREAD_GUARD_ENABLED", "false").lower() == "true"
+    SPREAD_MAX_BPS = float(os.getenv("SPREAD_MAX_BPS", "10.0"))
+    # Koruma watchdog (aktif; mevcut retry/backoff ile uyumlu limitler)
+    PROTECTION_WATCHDOG_ENABLED = os.getenv("PROTECTION_WATCHDOG_ENABLED", "true").lower() == "true"
+    PROTECTION_RETRY_MAX = int(os.getenv("PROTECTION_RETRY_MAX", "3"))
+    # Meta-router (personal use: disabled for single strategy focus)
+    META_ROUTER_ENABLED = os.getenv("META_ROUTER_ENABLED", "false").lower() == "true"
+    META_ROUTER_MODE = os.getenv("META_ROUTER_MODE", "mwu")
+
+    # --- Smart Execution (TWAP/VWAP) ---
+    # Personal use: disabled for simplicity (single market orders preferred)
+    SMART_EXECUTION_ENABLED = os.getenv("SMART_EXECUTION_ENABLED", "false").lower() == "true"
+    SMART_EXECUTION_MODE = os.getenv("SMART_EXECUTION_MODE", "twap")  # twap|vwap|auto
+    TWAP_SLICES = int(os.getenv("TWAP_SLICES", "4"))
+    TWAP_INTERVAL_SEC = float(os.getenv("TWAP_INTERVAL_SEC", "0.5"))  # prod icin arttirilabilir
+    VWAP_WINDOW_BARS = int(os.getenv("VWAP_WINDOW_BARS", "20"))
+    MAX_PARTICIPATION_RATE = float(os.getenv("MAX_PARTICIPATION_RATE", "0.2"))  # 20% (placeholder)
+    MIN_SLICE_NOTIONAL_USDT = float(os.getenv("MIN_SLICE_NOTIONAL_USDT", "10.0"))
+    MIN_SLICE_QTY = float(os.getenv("MIN_SLICE_QTY", "0.0"))  # 0 = quantize min auto
+    SMART_EXECUTION_SLEEP_SEC = float(os.getenv("SMART_EXECUTION_SLEEP_SEC", "0.0"))  # tests icin 0
+
     # --- Helpers ---
     @classmethod
     def get_commission_rates(cls) -> tuple[float, float]:
@@ -210,6 +247,34 @@ class Settings:
         Geriye donuk uyum icin tekil COMMISSION_PCT_PER_SIDE kullanilir.
         """
         return 2.0 * (cls.COMMISSION_PCT_PER_SIDE + cls.SLIPPAGE_PCT_PER_SIDE)
+
+    # ================== SCALP MODE CONFIGURATION ==================
+    # Scalp mode: Fast 5-minute trading with aggressive parameters
+    SCALP_MODE_ENABLED = os.getenv("SCALP_MODE_ENABLED", "false").lower() == "true"
+
+    # Scalp timeframes (faster than normal)
+    SCALP_TIMEFRAME = os.getenv("SCALP_TIMEFRAME", "5m")  # 5-minute bars
+    SCALP_UPDATE_INTERVAL = int(os.getenv("SCALP_UPDATE_INTERVAL", "2000"))  # 2 seconds (vs 5s normal)
+
+    # Scalp signal thresholds (more aggressive)
+    SCALP_BUY_SIGNAL_THRESHOLD = float(os.getenv("SCALP_BUY_SIGNAL_THRESHOLD", "60"))  # vs 50 normal
+    SCALP_SELL_SIGNAL_THRESHOLD = float(os.getenv("SCALP_SELL_SIGNAL_THRESHOLD", "20"))  # vs 17 normal
+    SCALP_BUY_EXIT_THRESHOLD = float(os.getenv("SCALP_BUY_EXIT_THRESHOLD", "55"))  # vs 45 normal
+    SCALP_SELL_EXIT_THRESHOLD = float(os.getenv("SCALP_SELL_EXIT_THRESHOLD", "25"))  # vs 22 normal
+
+    # Scalp risk management (tighter stops, smaller targets)
+    SCALP_PROFIT_TARGET_PCT = float(os.getenv("SCALP_PROFIT_TARGET_PCT", "0.8"))  # 0.8% target (vs 2% normal)
+    SCALP_STOP_LOSS_PCT = float(os.getenv("SCALP_STOP_LOSS_PCT", "0.4"))  # 0.4% stop (vs 1% normal)
+    SCALP_MAX_HOLD_MINUTES = int(os.getenv("SCALP_MAX_HOLD_MINUTES", "15"))  # 15 min max hold
+
+    # Scalp position sizing (smaller positions for faster turnover)
+    SCALP_RISK_PERCENT = float(os.getenv("SCALP_RISK_PERCENT", "0.5"))  # 0.5% risk (vs 1% normal)
+    SCALP_MAX_POSITIONS = int(os.getenv("SCALP_MAX_POSITIONS", "2"))  # Max 2 positions (vs 3 normal)
+
+    # Scalp exit conditions (more aggressive exits)
+    SCALP_PARTIAL_EXIT_ENABLED = os.getenv("SCALP_PARTIAL_EXIT_ENABLED", "true").lower() == "true"
+    SCALP_PARTIAL_EXIT_PCT = float(os.getenv("SCALP_PARTIAL_EXIT_PCT", "50"))  # 50% at 0.4% profit
+    SCALP_TRAILING_STOP_PCT = float(os.getenv("SCALP_TRAILING_STOP_PCT", "0.2"))  # 0.2% trailing
 
 class RuntimeConfig:
     MARKET_MODE = Settings.MARKET_MODE
@@ -225,10 +290,25 @@ class RuntimeConfig:
 # --- Environment-based path scoping (optional) ---
 # Not: Env override (ENV var) mevcutsa kullanici tercihi korunur.
 def _detect_env_name() -> str:
+    """Environment name detection - reads directly from env vars to support dynamic reloading"""
     try:
-        if Settings.OFFLINE_MODE:
+        # Read directly from environment to support test reloading scenarios
+        offline_env = os.getenv("OFFLINE_MODE", "auto").lower()
+        use_testnet_env = os.getenv("USE_TESTNET", "true").lower() == "true"
+
+        # OFFLINE_MODE precedence logic (same as in Settings class)
+        if offline_env == "true":
+            offline_mode = True
+        elif offline_env == "auto":
+            api_key = os.getenv("BINANCE_API_KEY")
+            api_secret = os.getenv("BINANCE_API_SECRET")
+            offline_mode = (api_key in (None, "") or api_secret in (None, ""))
+        else:
+            offline_mode = False
+
+        if offline_mode:
             return "offline"
-        if Settings.USE_TESTNET:
+        if use_testnet_env:
             return "testnet"
         return "prod"
     except Exception:
@@ -303,3 +383,38 @@ if _env_iso in ("on", "auto"):
     # METRICS_FILE_DIR
     if _data_explicit or not _metrics_explicit:
         Settings.METRICS_FILE_DIR = _join(Settings.DATA_PATH, "processed", "metrics", _env)
+
+    # ======================= A32 EDGE HARDENING CONFIGURATION =======================
+    # Edge Hardening System (personal use: disabled for simplicity)
+    A32_EDGE_HARDENING_ENABLED = os.getenv("A32_EDGE_HARDENING_ENABLED", "false").lower() == "true"
+
+    # Edge Health Monitor Settings
+    EDGE_HEALTH_WINDOW_TRADES = int(os.getenv("EDGE_HEALTH_WINDOW_TRADES", "200"))
+    EDGE_HEALTH_MIN_TRADES = int(os.getenv("EDGE_HEALTH_MIN_TRADES", "50"))
+    EDGE_HEALTH_CONFIDENCE_INTERVAL = float(os.getenv("EDGE_HEALTH_CONFIDENCE_INTERVAL", "0.95"))
+    EDGE_HEALTH_HOT_THRESHOLD = float(os.getenv("EDGE_HEALTH_HOT_THRESHOLD", "0.10"))  # >0.1R
+    EDGE_HEALTH_WARM_THRESHOLD = float(os.getenv("EDGE_HEALTH_WARM_THRESHOLD", "0.0"))  # >0R
+
+    # 4x Cost-of-Edge Rule Settings
+    COST_OF_EDGE_MULTIPLIER = float(os.getenv("COST_OF_EDGE_MULTIPLIER", "4.0"))  # 4x rule
+    COST_FEE_MODEL = os.getenv("COST_FEE_MODEL", "tiered")  # flat|tiered|dynamic
+    COST_SLIPPAGE_MODEL = os.getenv("COST_SLIPPAGE_MODEL", "dynamic")  # static|dynamic|spread_based
+
+    # Microstructure Filter Settings
+    MICROSTRUCTURE_ENABLED = os.getenv("MICROSTRUCTURE_ENABLED", "false").lower() == "true"
+    MICROSTRUCTURE_OBI_LEVELS = int(os.getenv("MICROSTRUCTURE_OBI_LEVELS", "5"))
+    MICROSTRUCTURE_OBI_LONG_MIN = float(os.getenv("MICROSTRUCTURE_OBI_LONG_MIN", "0.20"))
+    MICROSTRUCTURE_OBI_SHORT_MAX = float(os.getenv("MICROSTRUCTURE_OBI_SHORT_MAX", "-0.20"))
+    MICROSTRUCTURE_AFR_WINDOW_TRADES = int(os.getenv("MICROSTRUCTURE_AFR_WINDOW_TRADES", "80"))
+    MICROSTRUCTURE_AFR_LONG_MIN = float(os.getenv("MICROSTRUCTURE_AFR_LONG_MIN", "0.55"))
+    MICROSTRUCTURE_AFR_SHORT_MAX = float(os.getenv("MICROSTRUCTURE_AFR_SHORT_MAX", "0.45"))
+    MICROSTRUCTURE_CONFLICT_ACTION = os.getenv("MICROSTRUCTURE_CONFLICT_ACTION", "wait")  # wait|abort
+
+    # Kelly Fraction Settings (for future integration)
+    KELLY_ENABLED = os.getenv("KELLY_ENABLED", "false").lower() == "true"
+    KELLY_CONSERVATIVE_MULT = float(os.getenv("KELLY_CONSERVATIVE_MULT", "0.25"))
+    KELLY_MAX_FRACTION = float(os.getenv("KELLY_MAX_FRACTION", "0.005"))  # 0.5% max
+
+    # Dead Zone Settings
+    DEAD_ZONE_ENABLED = os.getenv("DEAD_ZONE_ENABLED", "false").lower() == "true"
+    DEAD_ZONE_EPS_THRESHOLD = float(os.getenv("DEAD_ZONE_EPS_THRESHOLD", "0.05"))  # [-0.05, +0.05] no trade

@@ -1,0 +1,87 @@
+Scripts Modules Inventory (Generated 2025-08-24)
+=================================================
+Scope: scripts utility layer (apply_migrations, backup_snapshot, create_tag, secret_scan, smoke_tests).
+
+1. apply_migrations.py
+----------------------
+Purpose: Sequentially apply new SQL migration files to SQLite trades.db and record applied filenames.
+Inputs: migrations/*.sql files, data/migrations_applied.txt (applied list), data/trades.db path.
+Outputs: Updated SQLite schema, updated migrations_applied.txt with applied filenames.
+Process:
+ - Load applied set (migrations_applied.txt)
+ - Iterate sorted *.sql in migrations dir
+ - Execute not yet applied scripts via executescript
+ - Commit and persist updated applied set.
+Edge Cases: Creates dirs if missing; idempotent (re-running skips already applied). No transactional wrapper per-file (single conn; each script executed sequentially). No error rollback beyond default exception propagation.
+Gaps / Improvements:
+ - Wrap each migration in transaction savepoint for partial failure safety.
+ - Logging (structured) instead of print.
+ - Checksum verification to detect modified already-applied migrations.
+
+2. backup_snapshot.py
+---------------------
+Purpose: Create timestamped backup snapshot of tracked git files and prune >24h old snapshots.
+Inputs: Git repository state (git ls-files, git status), --force flag to override dirty workspace check.
+Outputs: backup/auto/<UTC_TIMESTAMP>/ directory tree with copies of tracked files.
+Process:
+ - Abort if dirty and not --force.
+ - Create target dir, copy each tracked file preserving metadata (copy2).
+ - Prune directories older than RETENTION_HOURS.
+Edge Cases: Errors copying individual files logged (print) but do not abort. Ignores untracked files intentionally.
+Gaps / Improvements:
+ - Parallel copy for large repos.
+ - Optional compression (zip/tar) to save space.
+ - Structured logging + report of size statistics.
+
+3. create_tag.py
+----------------
+Purpose: Automate semantic version tag creation incorporating SSoT revision.
+Inputs: Existing git tags (pattern v<maj>.<min>.<patch>-rev<rev>), desired bump level (--level), SSoT file (.github/copilot-instructions.md) for revision extraction.
+Outputs: New git tag (unless --dry-run); printed push command.
+Process:
+ - Parse SSoT rev (regex fallback) -> revX.
+ - Gather existing tags, compute next version per bump rule.
+ - Create annotated tag name (simple tag) and print instructions.
+Edge Cases: Non-matching tags ignored. If no tags, seeds starting version according to bump type. No validation that SSoT revision actually changed.
+Gaps / Improvements:
+ - Validate working tree clean before tagging.
+ - Optionally auto-push with confirmation.
+ - Better SSoT revision parse (explicit marker capture) or fallback to version section.
+
+4. secret_scan.py
+-----------------
+Purpose: Detect potential secrets in staged or provided files using regex heuristics.
+Inputs: --staged flag or explicit paths; file contents of candidate text files.
+Outputs: Exit code 1 with findings list if any patterns match; else 'Secret scan OK'.
+Process:
+ - Determine target files; scan only whitelisted extensions.
+ - Regex patterns for API keys & generic api_key fields.
+ - Ignore lines containing comment marker.
+Edge Cases: False positives possible; size filtering minimal; binary files skipped by extension.
+Gaps / Improvements:
+ - Add entropy-based detection.
+ - Configurable regex patterns via external config.
+ - Structured log output / JSON mode for CI integration.
+
+5. smoke_tests.py
+-----------------
+Purpose: Run a curated subset of fast pytest tests (smoke) for rapid feedback.
+Inputs: TEST_PATTERNS constant listing test nodeids; current Python interpreter.
+Outputs: Pytest run output; exit code indicates success/failure.
+Process:
+ - Invoke pytest with -q on specific tests.
+ - Report simple OK/FAILED message.
+Edge Cases: Assumes tests exist; no dynamic discovery fallback. No timing measurement.
+Gaps / Improvements:
+ - Add duration timing and threshold alerts.
+ - Allow pattern override via CLI.
+ - Integrate venv path validation before run.
+
+Cross-Cutting Recommendations
+-----------------------------
+ - Introduce structured_log usage across scripts (replace prints).
+ - Provide scripts/README.md summarizing usage & safety (migration rollback, backup retention, tagging policy).
+ - Add unit tests for secret_scan (already partly present) & create_tag bump logic.
+ - Consider packaging as console scripts via setup.cfg for distribution.
+
+End of scripts_inventory.txt

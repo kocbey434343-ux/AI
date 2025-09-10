@@ -12,12 +12,15 @@ Policy Options:
 - REDUCE: Pozisyon boyutu %50 azalt, retry
 """
 from __future__ import annotations
-from typing import Optional, Dict, Any, Tuple, Literal, cast
+
+import contextlib
+import os
+from typing import Any, Dict, Literal, Optional, Tuple, cast
+
+from config.settings import Settings
+
 from src.utils.logger import get_logger
 from src.utils.structured_log import slog
-from config.settings import Settings
-import os
-import contextlib
 
 SlippagePolicy = Literal["ABORT", "REDUCE"]
 

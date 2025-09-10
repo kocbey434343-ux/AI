@@ -1,8 +1,0 @@
-Starting API test...
-Settings loaded - API Key: BcGANL3N7z...
-Testnet: True
-Binance client imported successfully
-Client created successfully
-✓ Server time: {'serverTime': 1755921604864}
-✓ Got 1467 tickers
-First ticker: {'symbol': 'ETHBTC', 'priceChange': '0.00272000', 'priceChangePercent': '7.175', 'weightedAvgPrice': '0.03953907', 'prevClosePrice': '0.03788000', 'lastPrice': '0.04063000', 'lastQty': '0.45080000', 'bidPrice': '0.04063000', 'bidQty': '17.49560000', 'askPrice': '0.04064000', 'askQty': '85.40340000', 'openPrice': '0.03791000', 'highPrice': '0.04178000', 'lowPrice': '0.03768000', 'volume': '7567.67790000', 'quoteVolume': '299.21894794', 'openTime': 1755835200941, 'closeTime': 1755921600941, 'firstId': 456013, 'lastId': 457983, 'count': 1971}

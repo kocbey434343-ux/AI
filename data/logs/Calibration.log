@@ -41,3 +41,35 @@
 2025-08-23 08:19:29,743 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
 2025-08-23 09:19:49,459 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
 2025-08-23 10:24:50,634 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-25 12:37:18,237 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 09:25:58,180 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 09:36:14,639 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.82, 'buy_exit': 45.19, 'sell_exit': 21.82, 'source': 'best_candidate'}
+2025-08-26 10:14:38,721 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 10:40:15,594 INFO Calibration - Threshold overrides yazıldı: ./data\processed\threshold_overrides.json
+2025-08-26 10:40:29,560 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:40:48,438 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:50:04,544 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:51:16,396 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:51:16,499 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 10:51:47,489 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:51:47,588 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 10:52:09,559 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:52:09,660 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 10:54:57,688 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 10:54:57,789 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 11:01:03,140 INFO Calibration - Threshold overrides yazıldı: ./data\processed\threshold_overrides.json
+2025-08-26 11:01:08,982 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 11:01:09,686 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 11:04:49,324 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 11:05:02,782 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-08-26 11:05:08,016 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-08-26 11:41:24,775 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-09-04 03:31:37,208 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-09-04 03:31:37,913 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-09-04 03:31:44,119 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-09-04 03:32:14,820 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-09-04 03:32:20,851 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-09-04 05:51:28,391 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-09-04 18:21:53,197 INFO Calibration - Persist edilmiş eşikler yüklendi (baseline olarak): {'buy': 50.19, 'sell': 16.66, 'buy_exit': 45.19, 'sell_exit': 21.66, 'source': 'overrides'}
+2025-09-04 18:21:59,568 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json
+2025-09-06 09:12:44,573 INFO Calibration - Kalibrasyon kaydedildi: ./data\processed\calibration.json

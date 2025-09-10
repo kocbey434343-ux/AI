@@ -1,22 +1,41 @@
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget,
-                            QTableWidgetItem, QHeaderView, QPushButton, QLabel,
-                            QComboBox, QLineEdit, QTabWidget, QGroupBox, QSplitter, QApplication)
+import contextlib
+from datetime import datetime
+
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QFont
-import pandas as pd
-from src.signal_generator import SignalGenerator
+from PyQt5.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSplitter,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
+)
+
+from src.utils.logger import get_logger
+
+# Signal score thresholds
+SIGNAL_SCORE_HIGH_THRESHOLD = 80
+SIGNAL_SCORE_LOW_THRESHOLD = 40
 
 class SignalWindow(QWidget):
     def __init__(self, signal_generator, parent=None, signals=None):
-        # Ana pencereyi parent veriyoruz; bağımsız üst pencere gibi görünmesi için Window flag kullanılır.
+        # Ana pencereyi parent veriyoruz; bagimsiz ust pencere gibi gorunmesi icin Window flag kullanilir.
         super().__init__(parent)
         self.signal_generator = signal_generator
-        # Önceden hesaplanmış sinyaller (ana pencereden hızlı açılış için)
+        # Onceden hesaplanmis sinyaller (ana pencereden hizli acilis icin)
         self.preloaded_signals = signals or {}
         self.signals = {}
         self._refresh_scheduled = False
         self.setWindowTitle("Sinyal Analizi")
-        # Ekrana göre dinamik boyutlandırma (ana pencereden bağımsız)
+        # Ekrana gore dinamik boyutlandirma (ana pencereden bagimsiz)
         try:
             screen_geo = QApplication.primaryScreen().availableGeometry()
             w = int(screen_geo.width() * 0.85)
@@ -30,28 +49,26 @@ class SignalWindow(QWidget):
             self.setGeometry(150, 120, 1300, 850)
         self.setMinimumSize(1100, 750)
         self.setAttribute(Qt.WA_DeleteOnClose, True)
-        # Ana programın bu pencere kapanınca tamamen kapanmasını engelle (ihtiyaten)
-        try:
+        # Ana programin bu pencere kapaninca tamamen kapanmasini engelle (ihtiyaten)
+        with contextlib.suppress(Exception):
             self.setAttribute(Qt.WA_QuitOnClose, False)
-        except Exception:
-            pass
         self.setWindowFlag(Qt.Window, True)
         # Timer (cache geldiyse daha seyrek başlat)
         self.refresh_timer = QTimer()
         self.refresh_timer.timeout.connect(self.refresh_data)
         self.refresh_timer.start(120000 if self.preloaded_signals else 60000)
 
-        # UI'ı oluştur
+        # UI'i olustur
         self.init_ui()
 
-        # Verileri yükle
+        # Verileri yukle
         self.load_data()
-        # Olası yanlış kapanma durumlarını gözlemek için event filter
+        # Olasi yanlis kapanma durumlarini gozlemek icin event filter
         self.installEventFilter(self)
         self._debug_click_count = 0
 
     def eventFilter(self, obj, event):
-        # Tıklandığında uygulama kapanıyorsa önce hangi event geldiğini saptamak için basit sayaç
+        # Tiklandiginda uygulama kapaniyorsa once hangi event geldigini saptamak icin basit sayac
         try:
             et = event.type()
             # 2-3 temel event türünde debug göstergesi
@@ -62,32 +79,29 @@ class SignalWindow(QWidget):
         return super().eventFilter(obj, event)
 
     def closeEvent(self, event):
-        # Yalnızca kendini kapat; uygulamayı sonlandırma
+        # Yalnizca kendini kapat; uygulamayi sonlandirma
         event.accept()
-        # Referansı parent üzerinde temizle (varsa)
-        try:
-            if self.parent() is not None and hasattr(self.parent(), 'signal_window'):
-                if self.parent().signal_window is self:
-                    self.parent().signal_window = None
-        except Exception:
-            pass
+        # Referansi parent uzerinde temizle (varsa)
+        with contextlib.suppress(Exception):
+            if (self.parent() is not None 
+                and hasattr(self.parent(), 'signal_window') 
+                and self.parent().signal_window is self):
+                self.parent().signal_window = None
         # QuitOnClose zaten False; ekstra güvenlik
-        try:
+        with contextlib.suppress(Exception):
             QApplication.setQuitOnLastWindowClosed(False)
-        except Exception:
-            pass
 
     def init_ui(self):
-        """Arayüzü oluştur"""
+        """Arayuzu olustur"""
         layout = QVBoxLayout(self)
 
-        # Başlık
-        title = QLabel("📊 Canlı Sinyal Analizi")
+        # Baslik
+        title = QLabel("📊 Canli Sinyal Analizi")
         title.setAlignment(Qt.AlignCenter)
         title.setFont(QFont("Arial", 14, QFont.Bold))
         layout.addWidget(title)
 
-        # Zaman damgası
+        # Zaman damgasi
         self.timestamp_label = QLabel("Son Güncelleme: --:--:--")
         self.timestamp_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.timestamp_label)
@@ -113,7 +127,7 @@ class SignalWindow(QWidget):
         # Arama
         filter_layout.addWidget(QLabel("Arama:"))
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Parite adı...")
+        self.search_input.setPlaceholderText("Parite adi...")
         self.search_input.textChanged.connect(self.apply_filters)
         filter_layout.addWidget(self.search_input)
 
@@ -177,10 +191,10 @@ class SignalWindow(QWidget):
         splitter.addWidget(self.signal_table)
 
         # Detay paneli
-        self.detail_group = QGroupBox("Detaylı Analiz")
+        self.detail_group = QGroupBox("Detayli Analiz")
         detail_layout = QVBoxLayout()
 
-        self.detail_label = QLabel("Bir parite seçin detayları görmek için")
+        self.detail_label = QLabel("Bir parite secin detaylari gormek icin")
         self.detail_label.setAlignment(Qt.AlignCenter)
         detail_layout.addWidget(self.detail_label)
 
@@ -209,9 +223,9 @@ class SignalWindow(QWidget):
         layout.addWidget(splitter)
 
     def load_data(self):
-        """Verileri yükle"""
+        """Verileri yukle"""
         if self.preloaded_signals and not self.signals:
-            # İlk açılışta hazır veriyi kullan
+            # Ilk acilista hazir veriyi kullan
             self.signals = self.preloaded_signals
         elif not self.preloaded_signals:
             # Gerekirse üret
@@ -219,12 +233,12 @@ class SignalWindow(QWidget):
         self.apply_filters()
 
     def receive_signals_update(self, signals: dict):
-        """Ana pencereden canlı sinyal güncellemesi al."""
+        """Ana pencereden canli sinyal guncellemesi al."""
         if not signals:
             return
         self.preloaded_signals = signals
         self.signals = signals
-        # Birikimli (coalesced) yenileme – sık emit'te flicker engeller
+        # Birikimli (coalesced) yenileme - sik emit'te flicker engeller
         if not self._refresh_scheduled:
             self._refresh_scheduled = True
             QTimer.singleShot(150, self._apply_live_update)
@@ -232,18 +246,15 @@ class SignalWindow(QWidget):
     def _apply_live_update(self):
         self._refresh_scheduled = False
         self.apply_filters()
-        from datetime import datetime
         self.timestamp_label.setText(f"Son Güncelleme: {datetime.now().strftime('%H:%M:%S')}")
 
     def refresh_data(self):
         """Verileri yenile"""
         self.load_data()
-        from datetime import datetime
         self.timestamp_label.setText(f"Son Güncelleme: {datetime.now().strftime('%H:%M:%S')}")
 
     def apply_filters(self):
-        """Filtreleri uygula ve tabloyu güncelle (flicker azaltılmış)."""
-        from src.utils.logger import get_logger
+        """Filtreleri uygula ve tabloyu guncelle (flicker azaltilmis)."""
         logger = get_logger("SignalWindow")
         signal_filter = self.signal_filter.currentText()
         min_score_text = self.min_score_input.text().strip()
@@ -259,7 +270,7 @@ class SignalWindow(QWidget):
         try:
             for symbol, signal in self.signals.items():
                 sig_type = signal.get('signal')
-                if signal_filter != "Tümü" and sig_type != signal_filter:
+                if signal_filter not in ("Tumu", sig_type):
                     continue
                 if min_score is not None and signal.get('total_score', 0) < min_score:
                     continue
@@ -269,7 +280,12 @@ class SignalWindow(QWidget):
             def sort_key(item):
                 _sym, sig = item
                 s = sig.get('signal')
-                priority = 0 if s == 'AL' else 1 if s == 'SAT' else 2
+                if s == 'AL':
+                    priority = 0
+                elif s == 'SAT':
+                    priority = 1
+                else:
+                    priority = 2
                 return (priority, -sig.get('total_score', 0))
             filtered.sort(key=sort_key)
             self.signal_table.setUpdatesEnabled(False)
@@ -283,7 +299,7 @@ class SignalWindow(QWidget):
                 self.signal_table.setItem(row, 1, QTableWidgetItem(f"{cp:.2f}" if isinstance(cp, (int,float)) else "-"))
                 sig_val = signal.get('signal', '-')
                 sig_item = QTableWidgetItem(sig_val)
-                # Arka planı sabit koyu tonda bırak, sadece yazı rengini değiştir
+                # Arka plani sabit koyu tonda birak, sadece yazi rengini degistir
                 if sig_val == 'AL':
                     sig_item.setForeground(QColor(120, 220, 120))
                 elif sig_val == 'SAT':
@@ -293,9 +309,9 @@ class SignalWindow(QWidget):
                 self.signal_table.setItem(row, 2, sig_item)
                 total_score = signal.get('total_score', 0)
                 sc_item = QTableWidgetItem(f"{total_score:.1f}")
-                if total_score >= 80:
+                if total_score >= SIGNAL_SCORE_HIGH_THRESHOLD:
                     sc_item.setForeground(QColor(120, 220, 120))
-                elif total_score <= 40:
+                elif total_score <= SIGNAL_SCORE_LOW_THRESHOLD:
                     sc_item.setForeground(QColor(255, 120, 120))
                 else:
                     sc_item.setForeground(QColor(210, 200, 120))
@@ -312,14 +328,11 @@ class SignalWindow(QWidget):
         except Exception as e:
             logger.error(f"apply_filters hata: {e}")
         finally:
-            try:
+            with contextlib.suppress(Exception):
                 self.signal_table.setUpdatesEnabled(True)
-            except Exception:
-                pass
 
     def show_details(self):
-        """Seçili paritenin detaylarını göster"""
-        from src.utils.logger import get_logger
+        """Secili paritenin detaylarini goster"""
         logger = get_logger("SignalWindow")
         try:
             selected_items = self.signal_table.selectedItems()
@@ -333,7 +346,7 @@ class SignalWindow(QWidget):
             signal = self.signals.get(symbol)
             if not signal:
                 return
-            self.detail_label.setText(f"{symbol} Detaylı Analiz")
+            self.detail_label.setText(f"{symbol} Detayli Analiz")
             self.detail_table.setRowCount(0)
             for ind_name, score in signal.get('scores', {}).items():
                 r = self.detail_table.rowCount()
@@ -346,16 +359,15 @@ class SignalWindow(QWidget):
                         value = ind_val_series.get('histogram')
                         if hasattr(value, 'iloc'):
                             value = value.iloc[-1]
-                    else:
-                        if hasattr(ind_val_series, 'iloc'):
+                    elif hasattr(ind_val_series, 'iloc'):
                             value = ind_val_series.iloc[-1]
                 except Exception:
                     value = None
                 self.detail_table.setItem(r, 1, QTableWidgetItem("-" if value is None else f"{value:.2f}"))
                 score_item = QTableWidgetItem(f"{score:.1f}")
-                if score >= 80:
+                if score >= SIGNAL_SCORE_HIGH_THRESHOLD:
                     score_item.setForeground(QColor(120, 220, 120))
-                elif score <= 40:
+                elif score <= SIGNAL_SCORE_LOW_THRESHOLD:
                     score_item.setForeground(QColor(255, 120, 120))
                 else:
                     score_item.setForeground(QColor(210, 200, 120))

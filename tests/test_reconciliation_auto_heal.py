@@ -23,8 +23,9 @@ def test_cr0015_reconciliation_auto_heal(monkeypatch, tmp_path):
     assert 'HEALSYM' in summary['missing_stop_tp']
     # heal flag set
     assert t.positions['HEALSYM'].get('heal_attempted_HEALSYM') is True
-    # Second call idempotent (flag remains True, no duplication)
+    # Second call should still show missing protection (auto-heal is attempted but doesn't immediately fix)
+    # The logic only sets heal_attempted flag, doesn't instantly create protection orders
     summary2 = t._reconcile_open_orders()
-    assert 'HEALSYM' in summary2['missing_stop_tp']
-    # still single attempt marker
+    assert 'HEALSYM' in summary2['missing_stop_tp']  # Still missing, heal was only attempted
+    # heal flag still set (idempotent)
     assert t.positions['HEALSYM'].get('heal_attempted_HEALSYM') is True

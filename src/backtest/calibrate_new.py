@@ -1,6 +1,6 @@
 """Thin re-export for run_calibration (legacy compatibility).
 
-Not: Paket yapısına uygun relatif import kullanıldı.
+Not: Paket yapisina uygun relatif import kullanildi.
 """
 from .calibrate import run_calibration  # noqa: F401
 

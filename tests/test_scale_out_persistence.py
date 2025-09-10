@@ -12,6 +12,7 @@ def _db_conn_path(path: Path):
 
 def make_trader(tmp_path):
     os.environ['TRADES_DB_PATH'] = str(tmp_path / 'scaleout.db')
+    os.environ['ENABLE_POSITION_RELOAD'] = '1'  # Enable position reload for restart test
     Settings.OFFLINE_MODE = True  # type: ignore[attr-defined]
     return Trader()
 

@@ -8,8 +8,10 @@ from pathlib import Path
 from typing import Any, Optional
 
 from config.settings import Settings
+
 from src.utils.guard_events import GuardEventRecorder  # CR-0069
 from src.utils.logger import get_logger
+
 
 # local JSON helper (used in insert_open) defined early to avoid NameError
 def json_dumps(obj: Any) -> str | None:
@@ -112,7 +114,7 @@ class TradeStore:
         if self._in_pytest():
             self.close()
 
-    def close(self):  # testlerin beklediği basit kapama API
+    def close(self):  # simple closing API expected by tests
         try:
             if hasattr(self, '_conn') and self._conn:
                 try:
@@ -129,7 +131,7 @@ class TradeStore:
     def _ensure_conn(self) -> sqlite3.Connection:
         if self._conn is None:
             conn = sqlite3.connect(str(self.db_path))
-            # Test senaryosunda WAL gereksiz; normal journal yeterli
+            # In test scenario WAL unnecessary; normal journal sufficient
             with suppress(Exception):
                 if 'PYTEST_CURRENT_TEST' not in os.environ:
                     conn.execute("PRAGMA journal_mode=WAL;")
@@ -327,9 +329,45 @@ class TradeStore:
 
     def closed_trades(self, limit: int = 200) -> list[dict]:
         cur = self._ensure_conn().cursor()
-        rows = cur.execute("SELECT id, symbol, side, entry_price, exit_price, size, pnl_pct, opened_at, closed_at FROM trades WHERE exit_price IS NOT NULL ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
+        rows = cur.execute("SELECT id, symbol, side, entry_price, exit_price, stop_loss, take_profit, size, pnl_pct, opened_at, closed_at FROM trades WHERE exit_price IS NOT NULL ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
         cols = [c[0] for c in cur.description]
-        result = [dict(zip(cols, r)) for r in rows if r is not None]
+        result = []
+        for r in rows:
+            if r is not None:
+                trade_dict = dict(zip(cols, r))
+                # Add R-multiple calculation
+                try:
+                    entry_price = trade_dict.get('entry_price', 0)
+                    exit_price = trade_dict.get('exit_price', 0)
+                    stop_loss = trade_dict.get('stop_loss', 0)
+                    side = trade_dict.get('side', 'BUY')
+
+                    if entry_price and stop_loss and side:
+                        if side == 'BUY':
+                            risk_per_unit = entry_price - stop_loss
+                            profit_per_unit = exit_price - entry_price
+                        else:  # SELL
+                            risk_per_unit = stop_loss - entry_price
+                            profit_per_unit = entry_price - exit_price
+
+                        if risk_per_unit > 0:
+                            r_multiple = profit_per_unit / risk_per_unit
+                        else:
+                            r_multiple = 0.0
+
+                        trade_dict['r_multiple'] = round(r_multiple, 2)
+                    else:
+                        trade_dict['r_multiple'] = 0.0
+
+                    # use realized_pnl_pct as alias for pnl_pct
+                    trade_dict['realized_pnl_pct'] = trade_dict.get('pnl_pct', 0)
+
+                except Exception:
+                    trade_dict['r_multiple'] = 0.0
+                    trade_dict['realized_pnl_pct'] = trade_dict.get('pnl_pct', 0)
+
+                result.append(trade_dict)
+
         self._auto_close_if_pytest()
         return result
 
@@ -354,6 +392,38 @@ class TradeStore:
         result = [dict(zip(cols, r)) for r in rows if r is not None]
         self._auto_close_if_pytest()
         return result
+
+    def get_open_positions(self) -> list[dict]:
+        """Alias for open_trades for compatibility"""
+        return self.open_trades()
+
+    def get_closed_positions(self, limit: int = 100) -> list[dict]:
+        """Get closed positions - compatibility with UI"""
+        return self.closed_trades(limit=limit)
+
+    def get_closed_positions_today(self) -> list[dict]:
+        """Get today's closed positions for daily metrics"""
+        try:
+            cur = self._ensure_conn().cursor()
+            today = datetime.now().strftime('%Y-%m-%d')
+
+            rows = cur.execute("""
+                SELECT * FROM trades
+                WHERE exit_price IS NOT NULL
+                AND date(closed_at) = ?
+                ORDER BY closed_at DESC
+            """, (today,)).fetchall()
+
+            cols = [desc[0] for desc in cur.description]
+            return [dict(zip(cols, row)) for row in rows]
+
+        except sqlite3.Error as e:
+            LOGGER.error(f"Closed positions today query error: {e}")
+            return []
+
+    def get_recent_trades(self, limit: int = 50) -> list[dict]:
+        """Alias for recent_trades for compatibility"""
+        return self.recent_trades(limit)
 
     def scale_executions(self, trade_id: int) -> list[dict]:
         """Return scale_out executions (qty, price, r_mult) for a trade."""
@@ -426,7 +496,7 @@ class TradeStore:
         side = kwargs.get('side')
         r_mult = kwargs.get('r_mult')
         ts = kwargs.get('ts')
-    # Idempotent kayit icin dedup anahtari (exec_type + trade_id + temel alanlar)
+    # Idempotent record for dedup key (exec_type + trade_id + basic fields)
         def _mk_key() -> str:
             parts = [exec_type, str(trade_id or "-") , symbol]
             if side is not None:

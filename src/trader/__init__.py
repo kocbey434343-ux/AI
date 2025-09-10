@@ -2,4 +2,6 @@
 
 Incremental rebuild after legacy purge.
 """
-from .core import Trader  # re-export
+from .core import Trader
+
+__all__ = ["Trader"]

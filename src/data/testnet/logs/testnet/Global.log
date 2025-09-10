@@ -1,0 +1,23 @@
+2025-09-07 05:25:19,022 ERROR Global - UNCAUGHT EXCEPTION: FileNotFoundError: [Errno 2] No such file or directory: 'config/indicators.json'
+Traceback (most recent call last):
+  File "D:\trade_bot\src\main.py", line 107, in <module>
+    main()
+  File "D:\trade_bot\src\main.py", line 88, in main
+    window = MainWindow(trader=trader)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\ui\main_window.py", line 197, in __init__
+    self._post_init_setup()
+  File "D:\trade_bot\src\ui\main_window.py", line 306, in _post_init_setup
+    self.signal_generator = SignalGenerator()
+                            ^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\signal_generator.py", line 26, in __init__
+    self.indicator_calc = IndicatorCalculator()
+                          ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\indicators.py", line 12, in __init__
+    self.indicators_config = self.load_config()
+                             ^^^^^^^^^^^^^^^^^^
+  File "D:\trade_bot\src\indicators.py", line 15, in load_config
+    with open(Settings.INDICATORS_CONFIG, "r") as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'config/indicators.json'
+

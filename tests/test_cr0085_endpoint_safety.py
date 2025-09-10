@@ -16,6 +16,10 @@ class _FakeClient:
     def get_server_time(self):
         return {"serverTime": 0}
 
+    # V2 endpoint patching için gerekli method
+    def futures_position_information(self, **kwargs):
+        return []
+
 
 def test_endpoint_safety_blocks_prod_when_not_allowed(monkeypatch):
     # OFFLINE kapali, TESTNET kapali, ALLOW_PROD kapali => RuntimeError beklenir

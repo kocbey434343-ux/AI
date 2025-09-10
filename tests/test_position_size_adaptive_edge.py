@@ -25,18 +25,22 @@ def test_position_size_adaptive_edge_clamps_and_low_score(tmp_path, monkeypatch)
         signal = {'indicators': {'ATR': atr_value}, 'total_score': score}
         return position_size(t, SizeInputs('EDGEUSDT', balance, price, stop_loss, signal))
 
-    risk_amount = balance * (t.risk_manager.risk_percent / 100.0)
-
     # Asiri dusuk ATR (referansin 5% * 0.05'i) -> inverse cok buyuk olur; MAX_MULT'a clamp edilmeli
     very_low_atr = price * Settings.ADAPTIVE_RISK_ATR_REF_PCT / 100 * 0.05
-    base_low = risk_amount / (very_low_atr * t.risk_manager.atr_multiplier)
+    # Use actual RiskManager calculation instead of simplified formula
+    dist = very_low_atr * t.risk_manager.atr_multiplier
+    stop_loss = price - dist
+    base_low = t.risk_manager.calculate_position_size(balance, price, stop_loss)
     size_low_score50 = compute(very_low_atr, 50)  # skor 50 -> strength 0 -> çarpan 0.9
     expected_low = base_low * Settings.ADAPTIVE_RISK_MAX_MULT * 0.9
     assert math.isclose(size_low_score50, expected_low, rel_tol=0.05), f"low clamp fail got={size_low_score50} exp≈{expected_low}"
 
     # Asiri yuksek ATR (referansin 10x'i) -> inverse kucuk; MIN_MULT'a clamp
     very_high_atr = price * Settings.ADAPTIVE_RISK_ATR_REF_PCT / 100 * 10
-    base_high = risk_amount / (very_high_atr * t.risk_manager.atr_multiplier)
+    # Use actual RiskManager calculation instead of simplified formula
+    dist_high = very_high_atr * t.risk_manager.atr_multiplier
+    stop_loss_high = price - dist_high
+    base_high = t.risk_manager.calculate_position_size(balance, price, stop_loss_high)
     size_high_score50 = compute(very_high_atr, 50)
     expected_high = base_high * Settings.ADAPTIVE_RISK_MIN_MULT * 0.9
     assert math.isclose(size_high_score50, expected_high, rel_tol=0.05), f"high clamp fail got={size_high_score50} exp≈{expected_high}"

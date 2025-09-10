@@ -1,0 +1,83 @@
+Documentation Inventory (Generated 2025-08-24)
+===========================================
+Scope: docs/*.md, root README, migrations README.
+
+1. ARCHITECTURE_TRADER.md
+-------------------------
+Purpose: High-level architecture overview of modular Trader system (core, guards, execution, trailing, metrics).
+Key Sections: Module table, signal->position flow, price update flow, DB schema summary, guard chain, partial & trailing logic, metrics, dev notes, test strategy.
+Inputs Referenced: Settings (risk/trailing), TradeStore schema, Runtime thresholds.
+Outputs: Conceptual guidance; no code execution.
+Gaps / Improvements:
+ - Add diagram (Mermaid) for R-multiple based trailing steps.
+ - Explicit state diagram for position life-cycle (OPENING->OPEN->SCALING->CLOSING->CLOSED) referencing order_state FSM.
+ - Link CR IDs where features implemented (e.g., CR-0016 for trailing persistence).
+
+2. IMPROVEMENT_PLAN.md
+----------------------
+Purpose: Strategic improvement roadmap with prioritized tasks (P0..P3) across reliability, risk, reconciliation, tests, performance, architecture, observability, analytics, security, DX.
+Highlights: Top 7 sprint tasks; targeted exception refactor; partial fill RR recalculation; structured logging; order state machine.
+Gaps:
+ - Some items now accomplished (e.g., structured logging partial adoption) should sync status.
+ - Add mapping to CR IDs for traceability.
+
+3. DEV_WORKFLOW_WITH_EXTENSIONS.md
+----------------------------------
+Purpose: Developer workflow leveraging VS Code extensions (Black, Ruff, SonarLint, Data Wrangler, etc.).
+Content: Quality tools, test loop, data analysis, DB inspection, logging, GUI tools, security, recommended settings JSON, TODO for extension-focused tasks.
+Gaps:
+ - Could integrate pre-commit hook examples referencing create_tag & secret_scan.
+ - Add section on ASCII policy enforcement script.
+
+4. EXTENSIONS_TODO.md
+---------------------
+Purpose: Auto-generated list of installed / failed extensions with usage notes and TODOs.
+Gaps:
+ - Mark duplicates vs other docs; unify with DEV_WORKFLOW file to prevent drift.
+ - Add column for criticality (Must/Optional).
+
+5. module_dependency_diagram.md
+-------------------------------
+Purpose: Mermaid diagram of module dependencies + state fields & core flows.
+Includes: Position state field list; development suggestions; version revision.
+Gaps:
+ - Rev version (v1.11) should sync with SSoT overall revision (currently 1.35) or clarify independent numbering.
+ - Add structured_log module (utils.structured_log) to Infra cluster.
+ - Include Backtest modules (backtest/calibrate, orchestrator) for completeness.
+
+6. SESSION_SUMMARY.md
+---------------------
+Purpose: Rolling session change summaries (recent enhancements: hysteresis, calibration, dynamic sizing, UI auto calibration).
+Gaps:
+ - Convert ad-hoc notes into CR entries where missing.
+ - Add timestamp headers standardization (ISO format).
+
+7. migrations/README.md
+-----------------------
+Purpose: Light migration system rules (NNN_description.sql naming, applied tracking file).
+Gaps:
+ - Missing example migration file and rollback note template.
+ - Add checksum or hash recommendation.
+
+8. README.md (root)
+-------------------
+Purpose: Public project overview (features, risk mgmt, cost model, metrics, runtime cost persistence, logging, roadmap, disclaimer).
+Gaps:
+ - Some features now implemented (websocket, trailing, partial exits) should mark status or moved from roadmap.
+ - Add quick start including .env example; mention OFFLINE_MODE auto behaviour.
+ - Security note could reference secret_scan script & pre-commit.
+
+Cross-Document Observations
+---------------------------
+ - Overlap between IMPROVEMENT_PLAN and README roadmap; consider single source & link.
+ - Ensure ASCII-only policy reflected (some Turkish diacritics present—policy allows in docs but clarify).
+ - Add index in docs/README linking to each document for navigation.
+
+Recommended Actions
+-------------------
+ - Sync diagram rev & SSoT rev; add structured_log & backtest to dependency graph.
+ - Create docs/INDEX.md auto-generated linking inventory.
+ - Add CR references inline (e.g., (CR-0016) near trailing persistence doc sections).
+ - Provide migration template file (sample NNN_description.sql) and hash verification guidance.
+
+End of docs_inventory.txt

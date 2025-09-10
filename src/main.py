@@ -5,18 +5,18 @@ import traceback
 # Python path'e proje dizinini ekle
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from PyQt5.QtWidgets import QApplication
-
 from config.runtime_thresholds import load_runtime_thresholds
 from config.settings import Settings
+from PyQt5.QtWidgets import QApplication
+
 from src.data_fetcher import DataFetcher
 from src.trader.core import Trader
 from src.ui.main_window import MainWindow
 from src.utils.feature_flags import flag_enabled
-from src.utils.logger import get_logger
-from src.utils.threshold_cache import get_threshold_cache
-from src.utils.logger import get_logger as _get_global_logger
+from src.utils.logger import get_logger, get_logger as _get_global_logger
 from src.utils.structured_log import slog
+from src.utils.threshold_cache import get_threshold_cache
+
 
 def ensure_data():
     """Veri klasorlerinin ve temel tarihsel verilerin hazir olmasini saglar."""

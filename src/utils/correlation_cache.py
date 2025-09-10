@@ -1,7 +1,9 @@
 import time
 from collections import deque
-from typing import Dict, Tuple, Deque, List
+from typing import Deque, Dict, List, Tuple
+
 import pandas as pd
+
 
 class CorrelationCache:
     """Maintains a rolling window of close prices per symbol and computes pairwise correlations.

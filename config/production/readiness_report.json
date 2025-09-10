@@ -1,0 +1,34 @@
+{
+  "timestamp": "2025-09-09T03:31:26.488056",
+  "environment_variables": {
+    "USE_TESTNET": false,
+    "BINANCE_API_KEY": false,
+    "BINANCE_SECRET_KEY": false,
+    "ALLOW_PROD": false
+  },
+  "database": {
+    "data_directory": true,
+    "production_directory": true,
+    "database_ready": true
+  },
+  "configuration": {
+    "settings_file": true,
+    "production_config": true
+  },
+  "security": {
+    "file_permissions": true,
+    "env_files_secure": true,
+    "debug_disabled": true
+  },
+  "monitoring": {
+    "monitoring_simple_production_monitor.py": true,
+    "monitoring_production_monitoring_dashboard.py": true,
+    "metrics_port_available": true
+  },
+  "summary": {
+    "total_checks": 15,
+    "passed_checks": 11,
+    "readiness_percentage": 73.3,
+    "status": "NEEDS_ATTENTION"
+  }
+}

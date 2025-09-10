@@ -1,0 +1,47 @@
+File: src/utils/correlation_cache.py
+Purpose: Rolling price window & pairwise correlation calculator for guard decisions.
+Structure: data dict[symbol] -> deque[(ts, price)] with TTL purge.
+APIs: update(symbol, price, ts?), correlation(a,b) -> float|None, correlated_symbols(target, threshold) -> list.
+Notes: Uses pct_change correlation; no persistence; thread safety not enforced (single-thread assumption).
+
+File: src/utils/feature_flags.py
+Purpose: Simple env-based feature flag system.
+APIs: flag_enabled(name) -> bool (case-insensitive); internal cached set via _load_flags (FEATURE_FLAGS env var).
+Notes: No runtime invalidation; requires process restart to pick up new flags.
+
+File: src/utils/helpers.py
+Purpose: Generic helper functions (I/O, formatting, PnL, Sharpe, etc.).
+Functions: save_json, load_json, save_csv, format_timestamp, calculate_pnl, calculate_win_rate, calculate_sharpe_ratio.
+Gaps: Mixed Turkish docstrings vs ASCII policy; Sharpe ratio lacks stdev zero guard (could div by zero if constant returns); risk_free_rate applied per-period not annualized nuance.
+
+File: src/utils/logger.py
+Purpose: Logger factory (singleton per name) + auxiliary Logger wrapper that also writes error snapshots.
+Features: RotatingFileHandler (5MB * 3); console handler; dynamic level from Settings.LOG_LEVEL.
+Gaps: Duplicate directory usage (Settings.LOG_PATH vs hardcoded logs/errors); wrapper class partially redundant; Turkish characters in docstring; ASCII normalization needed.
+
+File: src/utils/order_state.py
+Purpose: Enum-based finite state machine for order lifecycle; transition(current,target) validates.
+States: OPENING -> OPEN/CLOSING, OPEN -> SCALING/CLOSING, SCALING -> SCALING/CLOSING, CLOSING -> CLOSED.
+Notes: Not yet integrated into Trader flow (positions are simple dicts). Potential future refactor path.
+
+File: src/utils/structured_log.py
+Purpose: Lightweight structured logging with ring buffer for tests.
+APIs: slog(event, **fields), get_slog_events(event?), clear_slog_events().
+Notes: Buffer always captures events, emission gated by Settings.STRUCTURED_LOG_ENABLED. Pending broader adoption (CR-0031).
+
+File: src/utils/trade_store.py
+Purpose: SQLite persistence layer for trades, executions, metrics; migration management.
+Key Methods: insert_open, close_trade (weighted PnL), record_execution/record_scale_out, update_stop_loss, stats, daily_realized_pnl_pct, consecutive_losses, recompute_all_weighted_pnl.
+Schema: trades / metrics / executions tables; user_version migrations to v2.
+Gaps: No index on closed_at alone (query patterns?), error suppress hides root causes; potential WAL checkpoint management missing; JSON stored without validation.
+
+File: src/utils/ws_utils.py
+Purpose: Pure function should_restart_ws controlling websocket restart decisions.
+Logic: Debounce window check; outside window restart on symbol set diff or transition from empty.
+Notes: Deterministic & testable; ensure tests cover boundary (exact debounce threshold) cases.
+
+Cross-Cutting Gaps (Utils):
+ - Language normalization to ASCII (policy alignment).
+ - Additional unit tests: helpers.calculate_sharpe_ratio zero-stdev, ws_utils edge timing, structured_log enable/disable path.
+ - Potential CR: integrate order_state FSM into execution lifecycle.
+ - Structured logging integration points yet unused in other modules.

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Pre-commit ASCII policy hook (CR-0031)
+FILES=$(git diff --cached --name-only --diff-filter=ACM | tr '\n' ' ')
+if [ -z "$FILES" ]; then
+  exit 0
+fi
+python scripts/ascii_scan.py --files $FILES
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  echo "Preventing commit due to ASCII policy violations." >&2
+  exit $STATUS
+fi
+exit 0

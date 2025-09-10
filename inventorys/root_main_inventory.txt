@@ -1,0 +1,106 @@
+Root & Main Modules Inventory (Generated 2025-08-24)
+===============================================
+Scope: Root directory files, entry points, configuration, and top-level src modules.
+
+1. src/main.py
+--------------
+Purpose: Application entry point with environment validation, data initialization, PyQt5 app lifecycle, global exception handling.
+Key Functions:
+ - ensure_data(): Ensures top pairs list + historical CSV data; validates dataset integrity with repair option.
+ - validate_environment(): Checks API keys, creates directories, logs validation results.
+ - main(): Logger init, settings load, PyQt app start, MainWindow creation, exception hook setup.
+Inputs: Environment variables (.env), file system state, Settings configuration.
+Outputs: Running PyQt5 application with MainWindow; structured logs (app_start event).
+Features: Optional STARTUP_INFO feature flag demo; automatic venv path added to sys.path.
+Gaps/Improvements:
+ - Hardcoded ensure_data could be parameterized for different initialization modes.
+ - Global exception hook could integrate with structured logging for better error tracking.
+
+2. src/trader.py
+----------------
+Purpose: Compatibility shim for legacy imports during modular migration.
+Content: Single re-export from trader.core.Trader maintaining backward compatibility.
+Function: Allows existing `from src.trader import Trader` imports to work while transitioning to modular `src.trader.core.Trader`.
+Status: Transitional; can be removed once all imports updated to new path.
+
+3. src/data_fetcher.py (already covered in core_inventory.txt)
+4. src/indicators.py (already covered in core_inventory.txt) 
+5. src/risk_manager.py (already covered in core_inventory.txt)
+6. src/signal_generator.py (already covered in core_inventory.txt)
+
+7. requirements.txt
+-------------------
+Purpose: Python package dependencies specification for pip installation.
+Key Dependencies:
+ - python-binance==1.0.17: Exchange API client
+ - pandas==2.0.3, numpy==1.24.3: Data processing
+ - PyQt5==5.15.9: GUI framework
+ - python-dotenv==1.0.0: Environment variable loading
+ - ta==0.10.2: Technical analysis indicators
+ - pytest==8.2.2, pytest-qt==4.4.0: Testing framework
+ - ruff==0.5.7: Fast Python linter/formatter
+Version Strategy: Pinned versions for reproducible builds; manual updates as needed.
+Gaps: No requirements-dev.txt separation; could add version ranges for flexibility in production.
+
+8. .gitignore
+-------------
+Purpose: Specifies files/directories to exclude from version control.
+Excluded Items: Python cache (__pycache__/, *.pyc), environment (.env), IDE configs (.vscode/, .idea/), virtual envs (venv/, .venv/), tool caches (.mypy_cache/, .pytest_cache/).
+Coverage: Standard Python development exclusions; includes security (.env) and tool-specific patterns.
+Gap: Could add data/processed/* pattern if large generated files should not be tracked.
+
+9. pytest.ini
+-------------
+Purpose: Pytest configuration for test discovery, path setup, logging, and filtering.
+Key Settings:
+ - testpaths = tests: Test discovery directory
+ - pythonpath = src: Allows direct imports from src/ in tests
+ - log_cli = true, log_cli_level = INFO: Console logging during tests
+ - filterwarnings: Suppresses common deprecation/user warnings
+ - addopts = -q: Quiet mode by default
+Gap: No explicit marker definitions; could add custom markers for test categorization (e.g., @pytest.mark.slow).
+
+10. run_trade_bot.bat
+---------------------
+Purpose: Windows batch launcher with mode selection (console/silent) and virtual environment activation.
+Modes:
+ - console (default): Standard console execution with pause on exit
+ - silent: Background execution using pythonw (no console window)
+ - help: Usage information
+Features: Auto-detects and activates .venv if present; uses venv python if available; error handling with log directory reference.
+Inputs: Command line mode argument; file system (.venv detection).
+Outputs: Running application in specified mode; console feedback messages.
+Gaps: No Linux/Mac equivalent (run_trade_bot.sh); could add logging level override option.
+
+11. disciplin.txt
+-----------------
+Purpose: Development discipline document derived from SSoT; read-only reference for standards and procedures.
+Content Sections: Fast start checklist, directory reference, governance artifacts, development pipeline, quality gates, tool table, configuration, logging, risk management bridges.
+Key Points: Test-first philosophy, minimal patches, backward compatibility, ASCII code policy, security practices.
+Version: Snapshot of SSoT rev v1.34; synchronizes with SSoT changes via CR process.
+Usage: Onboarding reference, process reminder, tool discovery.
+Gap: Manual sync with SSoT; could be auto-generated from SSoT sections.
+
+Observations & Cross-References
+-------------------------------
+ - main.py acts as orchestrator, initializing all subsystems documented in other inventories.
+ - disciplin.txt serves as process documentation complementing technical inventories.
+ - Entry points (main.py, run_trade_bot.bat) provide multiple execution pathways.
+ - Version pinning in requirements.txt aligns with disciplined development approach.
+ - Configuration files (pytest.ini, .gitignore) support quality gates mentioned in disciplin.txt.
+
+Missing Root Files
+------------------
+ - No setup.py or pyproject.toml for package distribution
+ - No .env.example template file
+ - No Makefile or task runner configuration
+ - No CI/CD configuration files (GitHub Actions, etc.)
+
+Next Actions
+------------
+ - Consider adding setup.py for installable package distribution
+ - Create .env.example with placeholder values for easier setup
+ - Add cross-platform launcher script (run_trade_bot.sh for Unix systems)
+ - Evaluate requirements.txt upgrade strategy (automated dependency scanning)
+
+End of root_main_inventory.txt

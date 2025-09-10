@@ -57,17 +57,29 @@ except ImportError:
         def info(self, *args, **kwargs):
             # no-op mock
             pass
-    # Map mock classes to expected names for the rest of the module
-    Counter = MockCounter  # type: ignore
-    Histogram = MockHistogram  # type: ignore
-    Gauge = MockGauge  # type: ignore
-    Info = MockInfo  # type: ignore
-    _prom_generate_latest = None  # type: ignore
+    # Gerçek Prometheus istemcisi mevcutsa kullan, yoksa mock'lar
+    if PROMETHEUS_AVAILABLE:
+        # Gerçek prometheus metrikleri
+        from prometheus_client import (
+            Counter,
+            Gauge,
+            Histogram,
+            Info,
+            generate_latest as _prom_generate_latest,
+        )
+    else:
+        # Mock sınıfları kullan
+        Counter = MockCounter  # type: ignore
+        Histogram = MockHistogram  # type: ignore
+        Gauge = MockGauge  # type: ignore
+        Info = MockInfo  # type: ignore
+        _prom_generate_latest = None  # type: ignore
+
     def _mock_generate_latest(registry=None):
         # reference the parameter to avoid linter warnings
         _ = registry
         # return static content as bytes when client is unavailable
-        return b"# Prometheus client not available"
+        return b"# Prometheus client not available - using mock data"
 
 # Helper to unify generate_latest regardless of availability
 def _generate_latest(registry):
@@ -478,6 +490,11 @@ def export_prometheus_metrics() -> str:
     """Export current metrics in Prometheus format"""
     exporter = get_exporter_instance()
     return exporter.export_metrics()
+
+
+def get_prometheus_exporter() -> PrometheusExporter:
+    """Get PrometheusExporter instance for A32 integration"""
+    return get_exporter_instance()
 
 
 def get_prometheus_content_type() -> str:
